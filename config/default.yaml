@@ -1,0 +1,17 @@
+# Stock Radar — Default Configuration
+# Secrets use ${ENV_VAR} placeholders — set them in your .env file.
+
+api_keys:
+  alpha_vantage: "${ALPHA_VANTAGE_API_KEY}"
+  finnhub: "${FINNHUB_API_KEY}"
+  anthropic: "${ANTHROPIC_API_KEY}"
+
+ollama:
+  host: "${OLLAMA_HOST}"
+  default_model: "llama3.1:8b"
+  large_model: "llama3.1:70b"
+  timeout_seconds: 30
+
+cache:
+  db_path: "data/stock_radar.db"
+  chroma_path: "data/chroma_data"
