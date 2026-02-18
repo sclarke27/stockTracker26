@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
+from mcp.types import TextContent
+
 from stock_radar.scoring.models import ScoringOutcome, ScoringResult
 from stock_radar.scoring.runner import (
     _build_result,
@@ -46,7 +48,7 @@ def _make_pending_prediction(**overrides: object) -> dict:
 
 def _mock_tool_result(data: dict) -> MagicMock:
     """Create a mock MCP tool result with JSON content."""
-    content_item = MagicMock()
+    content_item = MagicMock(spec=TextContent)
     content_item.text = json.dumps(data)
     result = MagicMock()
     result.content = [content_item]

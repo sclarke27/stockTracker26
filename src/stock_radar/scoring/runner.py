@@ -24,6 +24,7 @@ from stock_radar.scoring.config import (
 from stock_radar.scoring.date_utils import build_price_map, find_closest_trading_day
 from stock_radar.scoring.models import ScoringOutcome, ScoringResult
 from stock_radar.utils.logging import setup_logging
+from stock_radar.utils.mcp import get_tool_text
 
 _log = logger.bind(server=SERVER_NAME)
 
@@ -104,7 +105,7 @@ async def _get_pending_predictions(
             "get_pending_scoring",
             {"as_of_date": as_of_date, "buffer_days": HORIZON_BUFFER_DAYS},
         )
-        data = json.loads(result.content[0].text)
+        data = json.loads(get_tool_text(result))
         return data["predictions"]
     except Exception as exc:
         _log.error("Failed to fetch pending predictions", error=str(exc))
@@ -190,7 +191,7 @@ async def _fetch_price_map(
             "get_price_history",
             {"ticker": ticker, "outputsize": outputsize},
         )
-        data = json.loads(result.content[0].text)
+        data = json.loads(get_tool_text(result))
         return build_price_map(data["bars"])
     except Exception as exc:
         _log.warning(
@@ -255,7 +256,7 @@ async def _score_single_prediction(
                 "actual_price_at_horizon": price_at_horizon,
             },
         )
-        data = json.loads(result.content[0].text)
+        data = json.loads(get_tool_text(result))
         return ScoringOutcome(
             prediction_id=prediction_id,
             ticker=ticker,

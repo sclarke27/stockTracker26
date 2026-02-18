@@ -11,6 +11,7 @@ from loguru import logger
 from stock_radar.agents.exceptions import EscalationError
 from stock_radar.agents.models import AgentInput, AgentOutput, AnalysisResult
 from stock_radar.llm.base import LlmClient
+from stock_radar.utils.mcp import get_tool_text
 
 
 class BaseAgent(ABC):
@@ -200,7 +201,7 @@ class BaseAgent(ABC):
                 "horizon_days": result.horizon_days,
             },
         )
-        data = json.loads(tool_result.content[0].text)
+        data = json.loads(get_tool_text(tool_result))
         return data["prediction_id"]
 
     async def _store_reasoning(
@@ -258,7 +259,7 @@ class BaseAgent(ABC):
                     "ticker": ticker,
                 },
             )
-            data = json.loads(tool_result.content[0].text)
+            data = json.loads(get_tool_text(tool_result))
             return [r["content"] for r in data.get("results", [])]
         except Exception:
             logger.debug(

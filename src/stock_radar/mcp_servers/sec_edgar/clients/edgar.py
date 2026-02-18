@@ -92,6 +92,7 @@ class EdgarClient:
         if self._ticker_to_cik is None:
             await self._load_ticker_map()
 
+        assert self._ticker_to_cik is not None
         key = ticker.upper()
         if key not in self._ticker_to_cik:
             raise CikNotFoundError(f"Ticker '{ticker}' not found in SEC database.")
@@ -454,7 +455,14 @@ class EdgarClient:
             price_el = txn_el.find(".//transactionPricePerShare/value")
             post_shares_el = txn_el.find(".//sharesOwnedFollowingTransaction/value")
 
-            if date_el is None or code_el is None or shares_el is None:
+            if (
+                date_el is None
+                or code_el is None
+                or shares_el is None
+                or date_el.text is None
+                or code_el.text is None
+                or shares_el.text is None
+            ):
                 continue
 
             price: float | None = None

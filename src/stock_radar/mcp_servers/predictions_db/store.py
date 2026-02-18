@@ -122,6 +122,7 @@ class PredictionsStore:
         Raises:
             aiosqlite.IntegrityError: If the ``id`` already exists.
         """
+        assert self._db is not None, "PredictionsStore.initialize() must be called before use"
         placeholders = ", ".join("?" for _ in _INSERT_COLUMNS)
         columns = ", ".join(_INSERT_COLUMNS)
         values = tuple(record[col] for col in _INSERT_COLUMNS)
@@ -159,6 +160,7 @@ class PredictionsStore:
         Returns:
             ``True`` if a row was updated, ``False`` if the id was not found.
         """
+        assert self._db is not None, "PredictionsStore.initialize() must be called before use"
         cursor = await self._db.execute(
             """
             UPDATE predictions
@@ -201,6 +203,7 @@ class PredictionsStore:
         Returns:
             A dict of the row, or ``None`` if not found.
         """
+        assert self._db is not None, "PredictionsStore.initialize() must be called before use"
         async with self._db.execute(
             "SELECT * FROM predictions WHERE id = ?",
             (prediction_id,),
@@ -251,12 +254,14 @@ class PredictionsStore:
         if where_clauses:
             where_sql = "WHERE " + " AND ".join(where_clauses)
 
+        assert self._db is not None, "PredictionsStore.initialize() must be called before use"
         # Total count (ignores pagination).
         async with self._db.execute(
             f"SELECT COUNT(*) FROM predictions {where_sql}",
             params,
         ) as cursor:
             count_row = await cursor.fetchone()
+            assert count_row is not None  # COUNT(*) always returns a row
             total = count_row[0]
 
         # Paginated data.
@@ -288,6 +293,7 @@ class PredictionsStore:
         Returns:
             List of prediction dicts ready for scoring, oldest first.
         """
+        assert self._db is not None, "PredictionsStore.initialize() must be called before use"
         async with self._db.execute(
             """
             SELECT *
@@ -339,6 +345,7 @@ class PredictionsStore:
         if where_clauses:
             where_sql = "WHERE " + " AND ".join(where_clauses)
 
+        assert self._db is not None, "PredictionsStore.initialize() must be called before use"
         sql = f"""
             SELECT
                 agent_name,

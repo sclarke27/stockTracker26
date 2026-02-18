@@ -6,6 +6,7 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from mcp.types import TextContent
 
 from stock_radar.agents.earnings_linguist.models import (
     EarningsAnalysis,
@@ -49,7 +50,7 @@ def _sample_analysis() -> EarningsAnalysis:
 
 
 def _mock_tool_response(data: str) -> MagicMock:
-    return MagicMock(content=[MagicMock(text=data)])
+    return MagicMock(content=[MagicMock(spec=TextContent, text=data)])
 
 
 class TestRunEarningsLinguist:

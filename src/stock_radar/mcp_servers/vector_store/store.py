@@ -152,9 +152,14 @@ class VectorStore:
         raw = collection.query(**kwargs)
 
         # ChromaDB returns parallel lists inside single-element outer lists.
+        # The typed dicts declare these as Optional but we always request them.
+        assert raw["ids"] is not None
+        assert raw["documents"] is not None
+        assert raw["metadatas"] is not None
+        assert raw["distances"] is not None
         ids: list[str] = raw["ids"][0]
         documents: list[str] = raw["documents"][0]
-        metadatas: list[dict[str, Any]] = raw["metadatas"][0]
+        metadatas: list[dict[str, Any]] = raw["metadatas"][0]  # type: ignore[assignment]
         distances: list[float] = raw["distances"][0]
 
         results: list[dict[str, Any]] = []
@@ -189,6 +194,9 @@ class VectorStore:
         if not raw["ids"]:
             return None
 
+        # We always request documents and metadatas; assert to satisfy mypy.
+        assert raw["documents"] is not None
+        assert raw["metadatas"] is not None
         return {
             "id": raw["ids"][0],
             "content": raw["documents"][0],

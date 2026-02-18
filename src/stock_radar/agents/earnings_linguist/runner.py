@@ -19,6 +19,7 @@ from stock_radar.mcp_servers.market_data.server import create_server as create_m
 from stock_radar.mcp_servers.predictions_db.server import create_server as create_predictions_server
 from stock_radar.mcp_servers.vector_store.server import create_server as create_vector_store_server
 from stock_radar.utils.logging import setup_logging
+from stock_radar.utils.mcp import get_tool_text
 
 
 def _load_settings() -> AppSettings:
@@ -88,7 +89,7 @@ async def run_earnings_linguist(
                 "get_earnings_transcript",
                 {"ticker": ticker, "quarter": quarter, "year": year},
             )
-            transcript_data = json.loads(result.content[0].text)
+            transcript_data = json.loads(get_tool_text(result))
             transcript_content = transcript_data["content"]
         except Exception as exc:
             raise TranscriptNotFoundError(
@@ -99,7 +100,7 @@ async def run_earnings_linguist(
         company_name = ""
         try:
             info_result = await market_client.call_tool("get_company_info", {"ticker": ticker})
-            info_data = json.loads(info_result.content[0].text)
+            info_data = json.loads(get_tool_text(info_result))
             company_name = info_data.get("name", "")
         except Exception:
             logger.warning("Could not fetch company name", ticker=ticker)
@@ -116,7 +117,7 @@ async def run_earnings_linguist(
                         "year": prior_quarter[1],
                     },
                 )
-                prior_data = json.loads(prior_result.content[0].text)
+                prior_data = json.loads(get_tool_text(prior_result))
                 prior_content = prior_data["content"]
             except Exception:
                 logger.warning(

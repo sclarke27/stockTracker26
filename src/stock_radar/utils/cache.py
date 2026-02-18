@@ -49,6 +49,7 @@ class Cache:
         Returns:
             The cached JSON string, or ``None`` on a miss or expiration.
         """
+        assert self._db is not None, "Cache.initialize() must be called before use"
         now = time.time()
         async with self._db.execute(
             """
@@ -69,6 +70,7 @@ class Cache:
             data: Serialized JSON data to cache.
             ttl: Time-to-live in seconds, or ``None`` to never expire.
         """
+        assert self._db is not None, "Cache.initialize() must be called before use"
         now = time.time()
         await self._db.execute(
             """
@@ -89,6 +91,7 @@ class Cache:
         Args:
             key: Cache key to remove. No error if the key does not exist.
         """
+        assert self._db is not None, "Cache.initialize() must be called before use"
         await self._db.execute("DELETE FROM cache WHERE key = ?", (key,))
         await self._db.commit()
 
@@ -98,6 +101,7 @@ class Cache:
         Returns:
             Number of entries removed.
         """
+        assert self._db is not None, "Cache.initialize() must be called before use"
         now = time.time()
         cursor = await self._db.execute(
             """

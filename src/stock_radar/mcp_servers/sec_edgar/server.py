@@ -105,7 +105,7 @@ async def lifespan(server: FastMCP) -> AsyncIterator[ServerDeps]:
 
 def _deps(ctx: Context) -> ServerDeps:
     """Extract server dependencies from the tool context."""
-    return ctx.fastmcp._lifespan_result
+    return ctx.fastmcp._lifespan_result  # type: ignore[attr-defined,return-value]
 
 
 # ---------------------------------------------------------------------------
@@ -257,7 +257,7 @@ def create_server(name: str = "sec-edgar") -> FastMCP:
     """
     server = FastMCP(name, lifespan=lifespan)
     for tool_fn in TOOLS:
-        server.tool()(tool_fn)
+        server.tool()(tool_fn)  # type: ignore[arg-type]
     return server
 
 

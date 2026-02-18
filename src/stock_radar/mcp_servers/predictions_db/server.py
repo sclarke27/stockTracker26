@@ -27,6 +27,7 @@ from stock_radar.models.predictions import (
     PredictionHistoryResponse,
     PredictionRecord,
     ScorePredictionResponse,
+    ScoringStatus,
 )
 from stock_radar.utils.logging import setup_logging
 
@@ -77,7 +78,7 @@ async def lifespan(server: FastMCP) -> AsyncIterator[ServerDeps]:
 
 def _deps(ctx: Context) -> ServerDeps:
     """Extract server dependencies from the tool context."""
-    return ctx.fastmcp._lifespan_result
+    return ctx.fastmcp._lifespan_result  # type: ignore[attr-defined,return-value]
 
 
 # ---------------------------------------------------------------------------
@@ -160,6 +161,7 @@ async def score_prediction(
     return_pct = (actual_price_at_horizon / actual_price_close - 1) * 100
     direction = prediction["direction"]
 
+    status: ScoringStatus
     if direction == "BULLISH" and return_pct > 0 or direction == "BEARISH" and return_pct < 0:
         status = "CORRECT"
     elif direction == "NEUTRAL" and abs(return_pct) < NEUTRAL_RETURN_THRESHOLD_PCT:
@@ -306,7 +308,7 @@ def create_server(name: str = "predictions-db") -> FastMCP:
     """
     server = FastMCP(name, lifespan=lifespan)
     for tool_fn in TOOLS:
-        server.tool()(tool_fn)
+        server.tool()(tool_fn)  # type: ignore[arg-type]
     return server
 
 

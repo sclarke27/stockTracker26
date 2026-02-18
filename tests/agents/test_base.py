@@ -6,6 +6,7 @@ import json
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from mcp.types import TextContent
 
 from stock_radar.agents.base import BaseAgent
 from stock_radar.agents.exceptions import EscalationError
@@ -42,12 +43,13 @@ def _mock_predictions_client(prediction_id: str = "pred-001") -> AsyncMock:
         return_value=MagicMock(
             content=[
                 MagicMock(
+                    spec=TextContent,
                     text=json.dumps(
                         {
                             "prediction_id": prediction_id,
                             "created_at": "2024-01-01T00:00:00Z",
                         }
-                    )
+                    ),
                 )
             ]
         )
@@ -66,26 +68,28 @@ def _mock_vector_store_client(
     store_response = MagicMock(
         content=[
             MagicMock(
+                spec=TextContent,
                 text=json.dumps(
                     {
                         "document_id": "d1",
                         "document_type": "reasoning",
                         "collection_name": "reasoning",
                     }
-                )
+                ),
             )
         ]
     )
     search_response = MagicMock(
         content=[
             MagicMock(
+                spec=TextContent,
                 text=json.dumps(
                     {
                         "query": "q",
                         "document_type": "reasoning",
                         "results": similar_results,
                     }
-                )
+                ),
             )
         ]
     )
@@ -325,13 +329,14 @@ class TestBaseAgentRun:
                 return MagicMock(
                     content=[
                         MagicMock(
+                            spec=TextContent,
                             text=json.dumps(
                                 {
                                     "document_id": "d1",
                                     "document_type": "reasoning",
                                     "collection_name": "reasoning",
                                 }
-                            )
+                            ),
                         )
                     ]
                 )

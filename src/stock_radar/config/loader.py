@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import re
 from pathlib import Path
+from typing import cast
 
 import yaml
 
@@ -82,4 +83,4 @@ def load_config(path: Path | None = None) -> dict:
     with open(config_path) as f:
         raw = yaml.safe_load(f) or {}
 
-    return _walk_and_interpolate(raw)
+    return cast(dict, _walk_and_interpolate(raw))
