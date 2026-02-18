@@ -95,6 +95,15 @@ async def run_earnings_linguist(
                 f"Failed to fetch transcript for {ticker} Q{quarter} {year}: {exc}"
             ) from exc
 
+        # Fetch company name from company info (best-effort)
+        company_name = ""
+        try:
+            info_result = await market_client.call_tool("get_company_info", {"ticker": ticker})
+            info_data = json.loads(info_result.content[0].text)
+            company_name = info_data.get("name", "")
+        except Exception:
+            logger.warning("Could not fetch company name", ticker=ticker)
+
         # Optionally fetch prior quarter transcript
         prior_content = None
         if prior_quarter:
@@ -123,7 +132,7 @@ async def run_earnings_linguist(
             year=year,
             transcript_content=transcript_content,
             prior_transcript_content=prior_content,
-            company_name=transcript_data.get("company_name", ""),
+            company_name=company_name,
         )
 
         agent = EarningsLinguistAgent(settings=el_settings)
