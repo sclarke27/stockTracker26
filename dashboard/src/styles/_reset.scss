@@ -1,0 +1,41 @@
+@use 'variables' as *;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: $font-family;
+  background-color: $color-bg;
+  color: $color-text;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+a {
+  color: $color-accent;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
