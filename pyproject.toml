@@ -30,6 +30,7 @@ dev = [
 [project.scripts]
 stock-radar-earnings-linguist = "stock_radar.agents.earnings_linguist.runner:main"
 stock-radar-ingest = "stock_radar.pipeline.runner:main"
+stock-radar-score = "stock_radar.scoring.runner:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

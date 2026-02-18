@@ -268,6 +268,39 @@ class PredictionsStore:
 
         return rows, total
 
+    async def query_pending_scoring(
+        self,
+        *,
+        as_of_date: str,
+        buffer_days: int = 1,
+    ) -> list[dict]:
+        """Query unscored predictions whose horizon has elapsed.
+
+        Finds predictions where scored_at IS NULL and the horizon date
+        (prediction_date + horizon_days) is at least buffer_days before
+        as_of_date. Results are ordered oldest prediction_date first.
+
+        Args:
+            as_of_date: Reference date string (YYYY-MM-DD), typically today.
+            buffer_days: Minimum days past the horizon before scoring.
+                Defaults to 1 to ensure market data is available.
+
+        Returns:
+            List of prediction dicts ready for scoring, oldest first.
+        """
+        async with self._db.execute(
+            """
+            SELECT *
+            FROM predictions
+            WHERE scored_at IS NULL
+              AND date(prediction_date, '+' || horizon_days || ' days')
+                  <= date(?, '-' || ? || ' days')
+            ORDER BY prediction_date ASC
+            """,
+            (as_of_date, buffer_days),
+        ) as cursor:
+            return [dict(r) for r in await cursor.fetchall()]
+
     async def get_accuracy_stats(
         self,
         *,

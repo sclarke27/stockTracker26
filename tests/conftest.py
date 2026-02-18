@@ -41,4 +41,8 @@ def sample_config() -> dict:
                 "max_tokens": 4096,
             },
         },
+        "scoring": {
+            "horizon_buffer_days": 1,
+            "lookback_days": 365,
+        },
     }

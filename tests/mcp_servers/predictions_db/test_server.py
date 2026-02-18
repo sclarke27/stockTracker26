@@ -424,3 +424,125 @@ class TestToolReturnsValidJson:
 
         parsed = json.loads(get_tool_text(result))
         assert isinstance(parsed, dict)
+
+
+class TestGetPendingScoring:
+    """Tests for the get_pending_scoring tool."""
+
+    async def test_returns_empty_when_none_pending(self, tmp_db: str) -> None:
+        """No predictions at all returns empty list."""
+        with (
+            patch.dict("os.environ", MOCK_ENV),
+            patch(
+                "stock_radar.mcp_servers.predictions_db.server._get_db_path",
+                return_value=tmp_db,
+            ),
+        ):
+            async with Client(create_server()) as client:
+                result = await client.call_tool("get_pending_scoring", {"as_of_date": "2026-03-01"})
+                data = json.loads(get_tool_text(result))
+
+        assert data["predictions"] == []
+        assert data["total_count"] == 0
+
+    async def test_returns_pending_past_horizon(self, tmp_db: str) -> None:
+        """Prediction with elapsed horizon is returned."""
+        with (
+            patch.dict("os.environ", MOCK_ENV),
+            patch(
+                "stock_radar.mcp_servers.predictions_db.server._get_db_path",
+                return_value=tmp_db,
+            ),
+        ):
+            async with Client(create_server()) as client:
+                logged = await _log_prediction(
+                    client,
+                    prediction_date="2026-01-01",
+                    horizon_days=5,
+                )
+
+                result = await client.call_tool("get_pending_scoring", {"as_of_date": "2026-01-15"})
+                data = json.loads(get_tool_text(result))
+
+        assert data["total_count"] == 1
+        assert data["predictions"][0]["id"] == logged["prediction_id"]
+
+    async def test_excludes_future_horizons(self, tmp_db: str) -> None:
+        """Predictions whose horizon has not elapsed are excluded."""
+        with (
+            patch.dict("os.environ", MOCK_ENV),
+            patch(
+                "stock_radar.mcp_servers.predictions_db.server._get_db_path",
+                return_value=tmp_db,
+            ),
+        ):
+            async with Client(create_server()) as client:
+                await _log_prediction(
+                    client,
+                    prediction_date="2026-03-01",
+                    horizon_days=10,
+                )
+
+                result = await client.call_tool("get_pending_scoring", {"as_of_date": "2026-03-05"})
+                data = json.loads(get_tool_text(result))
+
+        assert data["total_count"] == 0
+
+    async def test_excludes_scored_predictions(self, tmp_db: str) -> None:
+        """Already-scored predictions are excluded."""
+        with (
+            patch.dict("os.environ", MOCK_ENV),
+            patch(
+                "stock_radar.mcp_servers.predictions_db.server._get_db_path",
+                return_value=tmp_db,
+            ),
+        ):
+            async with Client(create_server()) as client:
+                logged = await _log_prediction(
+                    client,
+                    prediction_date="2026-01-01",
+                    horizon_days=5,
+                )
+
+                # Score it
+                await client.call_tool(
+                    "score_prediction",
+                    {
+                        "prediction_id": logged["prediction_id"],
+                        "actual_price_close": 150.0,
+                        "actual_price_at_horizon": 155.0,
+                    },
+                )
+
+                result = await client.call_tool("get_pending_scoring", {"as_of_date": "2026-01-15"})
+                data = json.loads(get_tool_text(result))
+
+        assert data["total_count"] == 0
+
+    async def test_response_structure(self, tmp_db: str) -> None:
+        """Response contains predictions list and total_count."""
+        with (
+            patch.dict("os.environ", MOCK_ENV),
+            patch(
+                "stock_radar.mcp_servers.predictions_db.server._get_db_path",
+                return_value=tmp_db,
+            ),
+        ):
+            async with Client(create_server()) as client:
+                await _log_prediction(
+                    client,
+                    prediction_date="2026-01-01",
+                    horizon_days=5,
+                )
+
+                result = await client.call_tool("get_pending_scoring", {"as_of_date": "2026-01-15"})
+                data = json.loads(get_tool_text(result))
+
+        assert "predictions" in data
+        assert "total_count" in data
+        assert isinstance(data["predictions"], list)
+        pred = data["predictions"][0]
+        assert "id" in pred
+        assert "ticker" in pred
+        assert "prediction_date" in pred
+        assert "horizon_days" in pred

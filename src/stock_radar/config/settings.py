@@ -85,6 +85,21 @@ class AgentsSettings(BaseModel):
     )
 
 
+class ScoringSettings(BaseModel):
+    """Prediction scoring runner configuration."""
+
+    horizon_buffer_days: int = Field(
+        default=1,
+        ge=0,
+        description="Days past horizon before a prediction is eligible for scoring",
+    )
+    lookback_days: int = Field(
+        default=365,
+        gt=0,
+        description="Maximum calendar days back to consider predictions for scoring",
+    )
+
+
 class AppSettings(BaseModel):
     """Top-level application settings."""
 
@@ -102,4 +117,7 @@ class AppSettings(BaseModel):
     )
     agents: AgentsSettings = Field(
         default_factory=AgentsSettings, description="Agent configuration"
+    )
+    scoring: ScoringSettings = Field(
+        default_factory=ScoringSettings, description="Scoring runner settings"
     )

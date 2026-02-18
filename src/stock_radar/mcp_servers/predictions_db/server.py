@@ -14,6 +14,7 @@ from loguru import logger
 from stock_radar.mcp_servers.predictions_db.config import (
     DEFAULT_ACCURACY_LOOKBACK_DAYS,
     DEFAULT_QUERY_LIMIT,
+    HORIZON_BUFFER_DAYS,
     NEUTRAL_RETURN_THRESHOLD_PCT,
     SERVER_NAME,
 )
@@ -22,6 +23,7 @@ from stock_radar.models.predictions import (
     AgentAccuracyResponse,
     AgentStats,
     LogPredictionResponse,
+    PendingScoringResponse,
     PredictionHistoryResponse,
     PredictionRecord,
     ScorePredictionResponse,
@@ -254,12 +256,45 @@ async def get_agent_accuracy(
     return response.model_dump_json()
 
 
+async def get_pending_scoring(
+    ctx: Context,
+    as_of_date: str | None = None,
+    buffer_days: int = HORIZON_BUFFER_DAYS,
+) -> str:
+    """Get predictions that are unscored and past their horizon.
+
+    Finds predictions eligible for scoring — those where the prediction
+    date plus horizon days (plus a buffer) has elapsed.
+
+    Args:
+        as_of_date: Reference date (YYYY-MM-DD). Defaults to today.
+        buffer_days: Days past horizon before eligible. Defaults to 1.
+    """
+    deps = _deps(ctx)
+
+    if as_of_date is None:
+        as_of_date = date.today().isoformat()
+
+    rows = await deps.store.query_pending_scoring(
+        as_of_date=as_of_date,
+        buffer_days=buffer_days,
+    )
+    predictions = [PredictionRecord(**row) for row in rows]
+
+    response = PendingScoringResponse(
+        predictions=predictions,
+        total_count=len(predictions),
+    )
+    return response.model_dump_json()
+
+
 # All tool functions in registration order.
 TOOLS = [
     log_prediction,
     score_prediction,
     get_prediction_history,
     get_agent_accuracy,
+    get_pending_scoring,
 ]
 
 

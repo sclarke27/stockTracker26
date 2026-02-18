@@ -76,6 +76,15 @@ class PredictionHistoryResponse(BaseModel):
     total_count: int = Field(ge=0, description="Total number of matching predictions")
 
 
+class PendingScoringResponse(BaseModel):
+    """Predictions awaiting scoring (unscored, past horizon)."""
+
+    predictions: list[PredictionRecord] = Field(
+        description="Unscored predictions whose horizon has elapsed"
+    )
+    total_count: int = Field(ge=0, description="Number of pending predictions")
+
+
 class AgentStats(BaseModel):
     """Accuracy and performance statistics for a single agent and signal type."""
 

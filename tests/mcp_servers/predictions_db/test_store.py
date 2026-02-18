@@ -440,3 +440,95 @@ class TestStoreGetAccuracyStats:
         assert len(stats) == 1
         row = stats[0]
         assert row["scored"] == 1
+
+
+# ---------------------------------------------------------------------------
+# Query pending scoring
+# ---------------------------------------------------------------------------
+
+
+class TestStoreQueryPendingScoring:
+    """Tests for the query_pending_scoring method."""
+
+    async def test_returns_empty_when_no_predictions(self, store: PredictionsStore) -> None:
+        """Empty database returns empty list."""
+        results = await store.query_pending_scoring(as_of_date="2026-03-01")
+        assert results == []
+
+    async def test_returns_unscored_past_horizon(self, store: PredictionsStore) -> None:
+        """Unscored prediction with elapsed horizon+buffer is returned."""
+        pred = _make_prediction(prediction_date="2026-01-01", horizon_days=5)
+        await store.insert(pred)
+
+        # as_of_date = Jan 8 → horizon was Jan 6, buffer=1 → eligible on Jan 7
+        results = await store.query_pending_scoring(as_of_date="2026-01-08")
+        assert len(results) == 1
+        assert results[0]["id"] == pred["id"]
+
+    async def test_excludes_future_horizon(self, store: PredictionsStore) -> None:
+        """Prediction whose horizon has not yet elapsed is excluded."""
+        pred = _make_prediction(prediction_date="2026-03-01", horizon_days=10)
+        await store.insert(pred)
+
+        # as_of_date = Mar 5 → horizon is Mar 11, not yet elapsed
+        results = await store.query_pending_scoring(as_of_date="2026-03-05")
+        assert results == []
+
+    async def test_excludes_within_buffer(self, store: PredictionsStore) -> None:
+        """Horizon elapsed but within buffer days is excluded."""
+        pred = _make_prediction(prediction_date="2026-01-01", horizon_days=5)
+        await store.insert(pred)
+
+        # Horizon = Jan 6. buffer=1, so eligible on Jan 7.
+        # as_of_date = Jan 6 → not yet eligible.
+        results = await store.query_pending_scoring(as_of_date="2026-01-06")
+        assert results == []
+
+    async def test_excludes_already_scored(self, store: PredictionsStore) -> None:
+        """Already-scored predictions are excluded."""
+        pred = _make_prediction(prediction_date="2026-01-01", horizon_days=5)
+        await store.insert(pred)
+        await store.update_score(pred["id"], "2026-01-08T00:00:00", 150.0, 155.0, 3.33, "CORRECT")
+
+        results = await store.query_pending_scoring(as_of_date="2026-02-01")
+        assert results == []
+
+    async def test_mixed_predictions_filters_correctly(self, store: PredictionsStore) -> None:
+        """Mix of scored, unscored, future, and eligible — only eligible returned."""
+        # Eligible: unscored, past horizon + buffer
+        eligible = _make_prediction(id="eligible-1", prediction_date="2026-01-01", horizon_days=5)
+        await store.insert(eligible)
+
+        # Scored: past horizon but already scored
+        scored = _make_prediction(id="scored-1", prediction_date="2026-01-01", horizon_days=5)
+        await store.insert(scored)
+        await store.update_score("scored-1", "2026-01-08T00:00:00", 150.0, 155.0, 3.33, "CORRECT")
+
+        # Future: horizon not yet elapsed
+        future = _make_prediction(id="future-1", prediction_date="2026-03-01", horizon_days=10)
+        await store.insert(future)
+
+        results = await store.query_pending_scoring(as_of_date="2026-01-15")
+        assert len(results) == 1
+        assert results[0]["id"] == "eligible-1"
+
+    async def test_orders_by_prediction_date_asc(self, store: PredictionsStore) -> None:
+        """Results are ordered oldest prediction_date first."""
+        newer = _make_prediction(id="newer", prediction_date="2026-01-10", horizon_days=3)
+        older = _make_prediction(id="older", prediction_date="2026-01-05", horizon_days=3)
+        await store.insert(newer)
+        await store.insert(older)
+
+        results = await store.query_pending_scoring(as_of_date="2026-01-20")
+        assert len(results) == 2
+        assert results[0]["id"] == "older"
+        assert results[1]["id"] == "newer"
+
+    async def test_buffer_days_zero(self, store: PredictionsStore) -> None:
+        """buffer_days=0 returns predictions exactly at horizon."""
+        pred = _make_prediction(prediction_date="2026-01-01", horizon_days=5)
+        await store.insert(pred)
+
+        # Horizon = Jan 6. buffer=0 → eligible on Jan 6 itself.
+        results = await store.query_pending_scoring(as_of_date="2026-01-06", buffer_days=0)
+        assert len(results) == 1
