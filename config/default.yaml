@@ -7,7 +7,7 @@ api_keys:
   anthropic: "${ANTHROPIC_API_KEY}"
 
 ollama:
-  host: "${OLLAMA_HOST}"
+  host: "http://localhost:11434"
   default_model: "llama3.1:8b"
   large_model: "llama3.1:70b"
   timeout_seconds: 30

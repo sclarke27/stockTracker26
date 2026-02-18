@@ -16,7 +16,6 @@ CACHE_TTL_FILINGS = 86_400  # 24 hours
 CACHE_TTL_FILING_TEXT: int | None = None  # Never expires (filings are immutable)
 CACHE_TTL_INSIDER_TRANSACTIONS = 86_400  # 24 hours
 CACHE_TTL_FILING_SEARCH = 3_600  # 1 hour
-CACHE_TTL_TICKER_CIK = 604_800  # 7 days
 
 # SEC EDGAR rate limit
 SEC_RATE_LIMIT_PER_SECOND = 10

@@ -3,15 +3,14 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from unittest.mock import patch
 
 import httpx
-import pytest
 import respx
 from fastmcp import Client
 
 from stock_radar.mcp_servers.market_data.server import create_server
+from tests.mcp_servers.conftest import get_tool_text
 from tests.mcp_servers.market_data.test_alpha_vantage_client import (
     SAMPLE_DAILY_RESPONSE,
     SAMPLE_OVERVIEW_RESPONSE,
@@ -29,20 +28,8 @@ MOCK_ENV = {
     "ALPHA_VANTAGE_API_KEY": "test-av-key",
     "FINNHUB_API_KEY": "test-fh-key",
     "ANTHROPIC_API_KEY": "test-anthropic-key",
-    "OLLAMA_HOST": "http://localhost:11434",
     "SEC_EDGAR_EMAIL": "test@example.com",
 }
-
-
-def _get_text(result: object) -> str:
-    """Extract the text content from a CallToolResult."""
-    return result.content[0].text
-
-
-@pytest.fixture()
-def tmp_db(tmp_path: Path) -> str:
-    """Provide a path for a temporary cache database."""
-    return str(tmp_path / "test_cache.db")
 
 
 class TestServerTools:
@@ -63,7 +50,7 @@ class TestServerTools:
                     "get_price_history",
                     {"ticker": "AAPL"},
                 )
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["ticker"] == "AAPL"
         assert len(data["bars"]) == 2
         assert data["bars"][0]["close"] == 153.5
@@ -83,7 +70,7 @@ class TestServerTools:
                     "get_quote",
                     {"ticker": "MSFT"},
                 )
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["ticker"] == "MSFT"
         assert data["price"] == 420.50
 
@@ -102,7 +89,7 @@ class TestServerTools:
                     "get_company_info",
                     {"ticker": "AAPL"},
                 )
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["ticker"] == "AAPL"
         assert data["name"] == "Apple Inc"
 
@@ -121,7 +108,7 @@ class TestServerTools:
                     "search_tickers",
                     {"keywords": "apple"},
                 )
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert len(data["matches"]) == 2
         assert data["matches"][0]["symbol"] == "AAPL"
 
@@ -140,7 +127,7 @@ class TestServerTools:
                     "get_earnings_transcript",
                     {"ticker": "AAPL", "quarter": 4, "year": 2024},
                 )
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["ticker"] == "AAPL"
         assert "Tim Cook" in data["content"]
 
@@ -176,5 +163,5 @@ class TestServerTools:
                     "get_quote",
                     {"ticker": "MSFT"},
                 )
-        parsed = json.loads(_get_text(result))
+        parsed = json.loads(get_tool_text(result))
         assert isinstance(parsed, dict)

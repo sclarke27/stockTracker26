@@ -11,9 +11,5 @@ class ApiError(MarketDataError):
     """Raised when an external API returns an error response."""
 
 
-class CacheError(MarketDataError):
-    """Raised when a cache operation fails."""
-
-
 class TickerNotFoundError(MarketDataError):
     """Raised when a ticker symbol is not recognized by the API."""

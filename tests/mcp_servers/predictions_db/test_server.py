@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 from datetime import date
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -12,25 +11,14 @@ from fastmcp import Client
 from fastmcp.exceptions import ToolError
 
 from stock_radar.mcp_servers.predictions_db.server import create_server
+from tests.mcp_servers.conftest import get_tool_text
 
 MOCK_ENV = {
     "ALPHA_VANTAGE_API_KEY": "unused",
     "FINNHUB_API_KEY": "unused",
     "ANTHROPIC_API_KEY": "unused",
-    "OLLAMA_HOST": "http://localhost:11434",
     "SEC_EDGAR_EMAIL": "test@example.com",
 }
-
-
-def _get_text(result: object) -> str:
-    """Extract the text content from a CallToolResult."""
-    return result.content[0].text
-
-
-@pytest.fixture()
-def tmp_db(tmp_path: Path) -> str:
-    """Provide a path for a temporary predictions database."""
-    return str(tmp_path / "test_predictions.db")
 
 
 async def _log_prediction(client: Client, **overrides: object) -> dict:
@@ -49,7 +37,7 @@ async def _log_prediction(client: Client, **overrides: object) -> dict:
     }
     args.update(overrides)
     result = await client.call_tool("log_prediction", args)
-    return json.loads(_get_text(result))
+    return json.loads(get_tool_text(result))
 
 
 class TestLogPrediction:
@@ -84,7 +72,7 @@ class TestLogPrediction:
                 await _log_prediction(client)
                 result = await client.call_tool("get_prediction_history", {})
 
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["total_count"] == 1
         assert data["predictions"][0]["ticker"] == "AAPL"
 
@@ -100,7 +88,7 @@ class TestLogPrediction:
                 await _log_prediction(client, prediction_date="2026-01-15")
                 result = await client.call_tool("get_prediction_history", {})
 
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["predictions"][0]["prediction_date"] == "2026-01-15"
 
     async def test_log_prediction_defaults_date_to_today(self, tmp_db: str) -> None:
@@ -115,7 +103,7 @@ class TestLogPrediction:
                 await _log_prediction(client)
                 result = await client.call_tool("get_prediction_history", {})
 
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["predictions"][0]["prediction_date"] == date.today().isoformat()
 
 
@@ -141,7 +129,7 @@ class TestScorePrediction:
                     },
                 )
 
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["status"] == "CORRECT"
         assert data["return_pct"] == pytest.approx(10.0, abs=0.01)
         assert data["direction"] == "BULLISH"
@@ -165,7 +153,7 @@ class TestScorePrediction:
                     },
                 )
 
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["status"] == "INCORRECT"
 
     async def test_score_bearish_correct(self, tmp_db: str) -> None:
@@ -187,7 +175,7 @@ class TestScorePrediction:
                     },
                 )
 
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["status"] == "CORRECT"
 
     async def test_score_neutral_partial(self, tmp_db: str) -> None:
@@ -209,7 +197,7 @@ class TestScorePrediction:
                     },
                 )
 
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         # 1% return is below the 2% neutral threshold -> PARTIAL
         assert data["status"] == "PARTIAL"
 
@@ -250,7 +238,7 @@ class TestGetPredictionHistory:
                 await _log_prediction(client, ticker="GOOG")
                 result = await client.call_tool("get_prediction_history", {})
 
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["total_count"] == 3
         assert len(data["predictions"]) == 3
 
@@ -270,7 +258,7 @@ class TestGetPredictionHistory:
                     {"ticker": "AAPL"},
                 )
 
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["total_count"] == 1
         assert data["predictions"][0]["ticker"] == "AAPL"
 
@@ -299,7 +287,7 @@ class TestGetPredictionHistory:
                     {"scored_only": True},
                 )
 
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["total_count"] == 1
         assert data["predictions"][0]["status"] == "CORRECT"
 
@@ -319,7 +307,7 @@ class TestGetPredictionHistory:
                     {"limit": 2, "offset": 1},
                 )
 
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert len(data["predictions"]) == 2
         assert data["total_count"] == 5
 
@@ -360,7 +348,7 @@ class TestGetAgentAccuracy:
                 )
                 result = await client.call_tool("get_agent_accuracy", {})
 
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert len(data["agent_stats"]) == 1
         stats = data["agent_stats"][0]
         assert stats["agent_name"] == "earnings_linguist"
@@ -390,7 +378,7 @@ class TestGetAgentAccuracy:
                 )
                 result = await client.call_tool("get_agent_accuracy", {})
 
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         agent_names = {s["agent_name"] for s in data["agent_stats"]}
         assert agent_names == {"earnings_linguist", "sec_filing_analyzer"}
 
@@ -405,7 +393,7 @@ class TestGetAgentAccuracy:
             async with Client(create_server()) as client:
                 result = await client.call_tool("get_agent_accuracy", {})
 
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["agent_stats"] == []
 
 
@@ -434,5 +422,5 @@ class TestToolReturnsValidJson:
                     },
                 )
 
-        parsed = json.loads(_get_text(result))
+        parsed = json.loads(get_tool_text(result))
         assert isinstance(parsed, dict)

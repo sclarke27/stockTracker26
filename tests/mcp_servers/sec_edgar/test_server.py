@@ -3,16 +3,15 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from unittest.mock import patch
 
 import httpx
-import pytest
 import respx
 from fastmcp import Client
 
 from stock_radar.mcp_servers.sec_edgar.config import SEC_EFTS_URL, SEC_TICKERS_URL
 from stock_radar.mcp_servers.sec_edgar.server import create_server
+from tests.mcp_servers.conftest import get_tool_text
 from tests.mcp_servers.sec_edgar.test_edgar_client import (
     SAMPLE_COMPANY_TICKERS,
     SAMPLE_EFTS_RESPONSE,
@@ -26,19 +25,7 @@ MOCK_ENV = {
     "ALPHA_VANTAGE_API_KEY": "unused",
     "FINNHUB_API_KEY": "unused",
     "ANTHROPIC_API_KEY": "unused",
-    "OLLAMA_HOST": "http://localhost:11434",
 }
-
-
-def _get_text(result: object) -> str:
-    """Extract the text content from a CallToolResult."""
-    return result.content[0].text
-
-
-@pytest.fixture()
-def tmp_db(tmp_path: Path) -> str:
-    """Provide a path for a temporary cache database."""
-    return str(tmp_path / "test_cache.db")
 
 
 def _mock_sec_routes() -> None:
@@ -67,7 +54,7 @@ class TestServerTools:
                     "get_filings",
                     {"ticker": "AAPL"},
                 )
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["ticker"] == "AAPL"
         assert data["company_name"] == "Apple Inc."
         assert len(data["filings"]) == 4
@@ -87,7 +74,7 @@ class TestServerTools:
                     "get_filings",
                     {"ticker": "AAPL", "form_types": ["10-K"]},
                 )
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert len(data["filings"]) == 1
         assert data["filings"][0]["form_type"] == "10-K"
 
@@ -112,7 +99,7 @@ class TestServerTools:
                         "accession_number": "0000320193-25-000001",
                     },
                 )
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["ticker"] == "AAPL"
         assert data["form_type"] == "8-K"
         assert "definitive agreement" in data["content"]
@@ -136,7 +123,7 @@ class TestServerTools:
                     "get_insider_transactions",
                     {"ticker": "AAPL"},
                 )
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["ticker"] == "AAPL"
         assert data["company_name"] == "Apple Inc."
         assert len(data["transactions"]) >= 1
@@ -159,7 +146,7 @@ class TestServerTools:
                     "search_filings",
                     {"query": "artificial intelligence"},
                 )
-        data = json.loads(_get_text(result))
+        data = json.loads(get_tool_text(result))
         assert data["query"] == "artificial intelligence"
         assert data["total_hits"] == 2
         assert len(data["hits"]) == 2
@@ -199,5 +186,5 @@ class TestServerTools:
                     "get_filings",
                     {"ticker": "AAPL"},
                 )
-        parsed = json.loads(_get_text(result))
+        parsed = json.loads(get_tool_text(result))
         assert isinstance(parsed, dict)
