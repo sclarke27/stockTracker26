@@ -1,0 +1,48 @@
+# Stock Radar — Watchlist Configuration
+# Tickers organized by coverage tier for data ingestion.
+
+deep:
+  # Primary analysis targets — full multi-signal data fetching.
+  - symbol: AAPL
+    name: Apple Inc
+  - symbol: MSFT
+    name: Microsoft Corp
+  - symbol: GOOGL
+    name: Alphabet Inc
+  - symbol: AMZN
+    name: Amazon.com Inc
+  - symbol: NVDA
+    name: NVIDIA Corp
+  - symbol: META
+    name: Meta Platforms Inc
+  - symbol: TSLA
+    name: Tesla Inc
+  - symbol: JPM
+    name: JPMorgan Chase & Co
+  - symbol: V
+    name: Visa Inc
+  - symbol: JNJ
+    name: Johnson & Johnson
+
+light:
+  # Lightweight monitoring — quotes and filings only.
+  - symbol: AMD
+    name: Advanced Micro Devices
+  - symbol: BA
+    name: Boeing Co
+  - symbol: DIS
+    name: Walt Disney Co
+  - symbol: NFLX
+    name: Netflix Inc
+  - symbol: CRM
+    name: Salesforce Inc
+  - symbol: INTC
+    name: Intel Corp
+  - symbol: PFE
+    name: Pfizer Inc
+  - symbol: XOM
+    name: Exxon Mobil Corp
+  - symbol: WMT
+    name: Walmart Inc
+  - symbol: KO
+    name: Coca-Cola Co

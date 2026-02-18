@@ -26,6 +26,9 @@ dev = [
     "ruff>=0.6.0",
 ]
 
+[project.scripts]
+stock-radar-ingest = "stock_radar.pipeline.runner:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
