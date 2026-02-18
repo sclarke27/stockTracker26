@@ -30,4 +30,15 @@ def sample_config() -> dict:
         "predictions": {
             "db_path": "data/test_predictions.db",
         },
+        "agents": {
+            "earnings_linguist": {
+                "enabled": True,
+                "default_horizon_days": 5,
+                "escalation_confidence_threshold": 0.3,
+                "escalation_transcript_length": 24000,
+                "anthropic_model": "claude-sonnet-4-20250514",
+                "temperature": 0.1,
+                "max_tokens": 4096,
+            },
+        },
     }

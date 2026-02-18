@@ -9,6 +9,7 @@ description = "AI-powered stock market analysis using LLMs"
 requires-python = ">=3.11"
 dependencies = [
     "aiosqlite>=0.20.0",
+    "anthropic>=0.40.0",
     "fastmcp>=2.0.0",
     "httpx>=0.27.0",
     "chromadb>=0.5.0",
@@ -27,6 +28,7 @@ dev = [
 ]
 
 [project.scripts]
+stock-radar-earnings-linguist = "stock_radar.agents.earnings_linguist.runner:main"
 stock-radar-ingest = "stock_radar.pipeline.runner:main"
 
 [tool.setuptools.packages.find]

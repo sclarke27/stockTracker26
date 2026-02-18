@@ -46,6 +46,45 @@ class PredictionsSettings(BaseModel):
     )
 
 
+class EarningsLinguistSettings(BaseModel):
+    """Configuration for the Earnings Linguist agent."""
+
+    enabled: bool = Field(default=True, description="Whether the agent is active")
+    default_horizon_days: int = Field(
+        default=5, gt=0, description="Default prediction horizon in days"
+    )
+    escalation_confidence_threshold: float = Field(
+        default=0.3,
+        ge=0.0,
+        le=1.0,
+        description="Confidence below this triggers escalation to Claude API",
+    )
+    escalation_transcript_length: int = Field(
+        default=24000,
+        gt=0,
+        description="Transcript character length above which to escalate",
+    )
+    ollama_model: str | None = Field(
+        default=None,
+        description="Override Ollama model (uses ollama.default_model if None)",
+    )
+    anthropic_model: str = Field(
+        default="claude-sonnet-4-20250514",
+        description="Anthropic model for escalation",
+    )
+    temperature: float = Field(default=0.1, ge=0.0, le=2.0, description="LLM sampling temperature")
+    max_tokens: int = Field(default=4096, gt=0, description="Maximum tokens to generate")
+
+
+class AgentsSettings(BaseModel):
+    """Configuration for all analysis agents."""
+
+    earnings_linguist: EarningsLinguistSettings = Field(
+        default_factory=EarningsLinguistSettings,
+        description="Earnings Linguist agent settings",
+    )
+
+
 class AppSettings(BaseModel):
     """Top-level application settings."""
 
@@ -60,4 +99,7 @@ class AppSettings(BaseModel):
     predictions: PredictionsSettings = Field(
         default_factory=PredictionsSettings,
         description="Predictions database settings",
+    )
+    agents: AgentsSettings = Field(
+        default_factory=AgentsSettings, description="Agent configuration"
     )
