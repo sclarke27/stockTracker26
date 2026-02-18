@@ -32,6 +32,32 @@ agents:
     anthropic_model: "claude-sonnet-4-20250514"
     temperature: 0.1
     max_tokens: 4096
+  narrative_divergence:
+    enabled: true
+    default_horizon_days: 10
+    escalation_confidence_threshold: 0.3
+    escalation_min_articles: 5
+    ollama_model: null
+    anthropic_model: "claude-sonnet-4-20250514"
+    temperature: 0.1
+    max_tokens: 2048
+  sec_filing_analyzer:
+    enabled: true
+    default_horizon_days: 15
+    escalation_confidence_threshold: 0.3
+    escalation_filing_count: 30
+    ollama_model: null
+    anthropic_model: "claude-sonnet-4-20250514"
+    temperature: 0.1
+    max_tokens: 2048
+  contagion_mapper:
+    enabled: true
+    default_horizon_days: 5
+    escalation_confidence_threshold: 0.3
+    ollama_model: null
+    anthropic_model: "claude-sonnet-4-20250514"
+    temperature: 0.1
+    max_tokens: 2048
 
 scoring:
   horizon_buffer_days: 1

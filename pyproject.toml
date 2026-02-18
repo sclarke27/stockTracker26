@@ -28,10 +28,13 @@ dev = [
 ]
 
 [project.scripts]
+stock-radar-contagion-mapper = "stock_radar.agents.contagion_mapper.runner:main"
 stock-radar-earnings-linguist = "stock_radar.agents.earnings_linguist.runner:main"
 stock-radar-ingest = "stock_radar.pipeline.runner:main"
+stock-radar-narrative-divergence = "stock_radar.agents.narrative_divergence.runner:main"
 stock-radar-news-feed = "stock_radar.mcp_servers.news_feed:main"
 stock-radar-score = "stock_radar.scoring.runner:main"
+stock-radar-sec-filing-analyzer = "stock_radar.agents.sec_filing_analyzer.runner:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

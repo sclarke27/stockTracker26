@@ -6,13 +6,17 @@ import pytest
 from pydantic import ValidationError
 
 from stock_radar.config.settings import (
+    AgentsSettings,
     ApiKeys,
     AppSettings,
     CacheSettings,
+    ContagionMapperSettings,
     EarningsLinguistSettings,
+    NarrativeDivergenceSettings,
     OllamaSettings,
     ScoringSettings,
     SecEdgarSettings,
+    SecFilingAnalyzerSettings,
 )
 
 
@@ -160,3 +164,114 @@ class TestAppSettings:
         settings = AppSettings(**config)
         assert settings.ollama.default_model == "llama3.2:3b"
         assert settings.ollama.timeout_seconds == 60
+
+
+class TestNarrativeDivergenceSettings:
+    """Tests for NarrativeDivergenceSettings model."""
+
+    def test_defaults(self) -> None:
+        settings = NarrativeDivergenceSettings()
+        assert settings.enabled is True
+        assert settings.default_horizon_days == 10
+        assert settings.escalation_confidence_threshold == 0.3
+        assert settings.escalation_min_articles == 5
+        assert settings.ollama_model is None
+        assert settings.temperature == 0.1
+        assert settings.max_tokens == 2048
+
+    def test_horizon_days_must_be_positive(self) -> None:
+        with pytest.raises(ValidationError):
+            NarrativeDivergenceSettings(default_horizon_days=0)
+
+    def test_confidence_threshold_bounds(self) -> None:
+        with pytest.raises(ValidationError):
+            NarrativeDivergenceSettings(escalation_confidence_threshold=1.5)
+        with pytest.raises(ValidationError):
+            NarrativeDivergenceSettings(escalation_confidence_threshold=-0.1)
+
+    def test_min_articles_must_be_positive(self) -> None:
+        with pytest.raises(ValidationError):
+            NarrativeDivergenceSettings(escalation_min_articles=0)
+
+    def test_temperature_bounds(self) -> None:
+        with pytest.raises(ValidationError):
+            NarrativeDivergenceSettings(temperature=2.5)
+
+
+class TestSecFilingAnalyzerSettings:
+    """Tests for SecFilingAnalyzerSettings model."""
+
+    def test_defaults(self) -> None:
+        settings = SecFilingAnalyzerSettings()
+        assert settings.enabled is True
+        assert settings.default_horizon_days == 15
+        assert settings.escalation_confidence_threshold == 0.3
+        assert settings.escalation_filing_count == 30
+        assert settings.ollama_model is None
+        assert settings.temperature == 0.1
+        assert settings.max_tokens == 2048
+
+    def test_horizon_days_must_be_positive(self) -> None:
+        with pytest.raises(ValidationError):
+            SecFilingAnalyzerSettings(default_horizon_days=0)
+
+    def test_filing_count_must_be_positive(self) -> None:
+        with pytest.raises(ValidationError):
+            SecFilingAnalyzerSettings(escalation_filing_count=0)
+
+    def test_confidence_threshold_bounds(self) -> None:
+        with pytest.raises(ValidationError):
+            SecFilingAnalyzerSettings(escalation_confidence_threshold=1.5)
+
+
+class TestContagionMapperSettings:
+    """Tests for ContagionMapperSettings model."""
+
+    def test_defaults(self) -> None:
+        settings = ContagionMapperSettings()
+        assert settings.enabled is True
+        assert settings.default_horizon_days == 5
+        assert settings.escalation_confidence_threshold == 0.3
+        assert settings.ollama_model is None
+        assert settings.temperature == 0.1
+        assert settings.max_tokens == 2048
+
+    def test_horizon_days_must_be_positive(self) -> None:
+        with pytest.raises(ValidationError):
+            ContagionMapperSettings(default_horizon_days=0)
+
+    def test_confidence_threshold_bounds(self) -> None:
+        with pytest.raises(ValidationError):
+            ContagionMapperSettings(escalation_confidence_threshold=-0.1)
+
+
+class TestAgentsSettings:
+    """Tests for AgentsSettings model (all four agents present)."""
+
+    def test_all_agents_have_defaults(self) -> None:
+        settings = AgentsSettings()
+        assert settings.earnings_linguist.default_horizon_days == 5
+        assert settings.narrative_divergence.default_horizon_days == 10
+        assert settings.sec_filing_analyzer.default_horizon_days == 15
+        assert settings.contagion_mapper.default_horizon_days == 5
+
+    def test_narrative_divergence_accessible_from_app_settings(self) -> None:
+        app = AppSettings(
+            api_keys={"alpha_vantage": "av", "finnhub": "fh"},
+            sec_edgar={"user_agent_email": "test@example.com"},
+        )
+        assert app.agents.narrative_divergence.enabled is True
+
+    def test_sec_filing_analyzer_accessible_from_app_settings(self) -> None:
+        app = AppSettings(
+            api_keys={"alpha_vantage": "av", "finnhub": "fh"},
+            sec_edgar={"user_agent_email": "test@example.com"},
+        )
+        assert app.agents.sec_filing_analyzer.escalation_filing_count == 30
+
+    def test_contagion_mapper_accessible_from_app_settings(self) -> None:
+        app = AppSettings(
+            api_keys={"alpha_vantage": "av", "finnhub": "fh"},
+            sec_edgar={"user_agent_email": "test@example.com"},
+        )
+        assert app.agents.contagion_mapper.default_horizon_days == 5

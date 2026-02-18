@@ -76,12 +76,109 @@ class EarningsLinguistSettings(BaseModel):
     max_tokens: int = Field(default=4096, gt=0, description="Maximum tokens to generate")
 
 
+class NarrativeDivergenceSettings(BaseModel):
+    """Configuration for the Narrative vs Price Divergence agent."""
+
+    enabled: bool = Field(default=True, description="Whether the agent is active")
+    default_horizon_days: int = Field(
+        default=10, gt=0, description="Default prediction horizon in days"
+    )
+    escalation_confidence_threshold: float = Field(
+        default=0.3,
+        ge=0.0,
+        le=1.0,
+        description="Confidence below this triggers escalation to Claude API",
+    )
+    escalation_min_articles: int = Field(
+        default=5,
+        gt=0,
+        description="Escalate to Claude if fewer articles than this (low data quality)",
+    )
+    ollama_model: str | None = Field(
+        default=None,
+        description="Override Ollama model (uses ollama.default_model if None)",
+    )
+    anthropic_model: str = Field(
+        default="claude-sonnet-4-20250514",
+        description="Anthropic model for escalation",
+    )
+    temperature: float = Field(default=0.1, ge=0.0, le=2.0, description="LLM sampling temperature")
+    max_tokens: int = Field(default=2048, gt=0, description="Maximum tokens to generate")
+
+
+class SecFilingAnalyzerSettings(BaseModel):
+    """Configuration for the SEC Filing Pattern Analyzer agent."""
+
+    enabled: bool = Field(default=True, description="Whether the agent is active")
+    default_horizon_days: int = Field(
+        default=15, gt=0, description="Default prediction horizon in days"
+    )
+    escalation_confidence_threshold: float = Field(
+        default=0.3,
+        ge=0.0,
+        le=1.0,
+        description="Confidence below this triggers escalation to Claude API",
+    )
+    escalation_filing_count: int = Field(
+        default=30,
+        gt=0,
+        description="Escalate to Claude if filing count exceeds this (complex synthesis)",
+    )
+    ollama_model: str | None = Field(
+        default=None,
+        description="Override Ollama model (uses ollama.default_model if None)",
+    )
+    anthropic_model: str = Field(
+        default="claude-sonnet-4-20250514",
+        description="Anthropic model for escalation",
+    )
+    temperature: float = Field(default=0.1, ge=0.0, le=2.0, description="LLM sampling temperature")
+    max_tokens: int = Field(default=2048, gt=0, description="Maximum tokens to generate")
+
+
+class ContagionMapperSettings(BaseModel):
+    """Configuration for the Cross-Sector Contagion Mapper agent."""
+
+    enabled: bool = Field(default=True, description="Whether the agent is active")
+    default_horizon_days: int = Field(
+        default=5, gt=0, description="Default prediction horizon in days"
+    )
+    escalation_confidence_threshold: float = Field(
+        default=0.3,
+        ge=0.0,
+        le=1.0,
+        description="Confidence below this triggers escalation to Claude API",
+    )
+    ollama_model: str | None = Field(
+        default=None,
+        description="Override Ollama model (uses ollama.default_model if None)",
+    )
+    anthropic_model: str = Field(
+        default="claude-sonnet-4-20250514",
+        description="Anthropic model for escalation",
+    )
+    temperature: float = Field(default=0.1, ge=0.0, le=2.0, description="LLM sampling temperature")
+    max_tokens: int = Field(default=2048, gt=0, description="Maximum tokens to generate")
+
+
 class AgentsSettings(BaseModel):
     """Configuration for all analysis agents."""
 
     earnings_linguist: EarningsLinguistSettings = Field(
         default_factory=EarningsLinguistSettings,
         description="Earnings Linguist agent settings",
+    )
+    narrative_divergence: NarrativeDivergenceSettings = Field(
+        default_factory=NarrativeDivergenceSettings,
+        description="Narrative vs Price Divergence agent settings",
+    )
+    sec_filing_analyzer: SecFilingAnalyzerSettings = Field(
+        default_factory=SecFilingAnalyzerSettings,
+        description="SEC Filing Pattern Analyzer agent settings",
+    )
+    contagion_mapper: ContagionMapperSettings = Field(
+        default_factory=ContagionMapperSettings,
+        description="Cross-Sector Contagion Mapper agent settings",
     )
 
 
