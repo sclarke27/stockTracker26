@@ -31,6 +31,12 @@ class CacheSettings(BaseModel):
     chroma_path: str = Field(default="data/chroma_data", description="ChromaDB storage directory")
 
 
+class SecEdgarSettings(BaseModel):
+    """SEC EDGAR API configuration."""
+
+    user_agent_email: str = Field(description="Contact email for SEC User-Agent header")
+
+
 class AppSettings(BaseModel):
     """Top-level application settings."""
 
@@ -41,3 +47,4 @@ class AppSettings(BaseModel):
     cache: CacheSettings = Field(
         default_factory=CacheSettings, description="Cache and storage settings"
     )
+    sec_edgar: SecEdgarSettings = Field(description="SEC EDGAR configuration")

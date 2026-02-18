@@ -7,7 +7,6 @@ from loguru import logger
 
 from stock_radar.mcp_servers.market_data.config import AV_BASE_URL, SERVER_NAME
 from stock_radar.mcp_servers.market_data.exceptions import ApiError, TickerNotFoundError
-from stock_radar.mcp_servers.market_data.rate_limiter import RateLimiter
 from stock_radar.models.market_data import (
     CompanyInfoResponse,
     OHLCVBar,
@@ -16,6 +15,7 @@ from stock_radar.models.market_data import (
     TickerMatch,
     TickerSearchResponse,
 )
+from stock_radar.utils.rate_limiter import RateLimiter
 
 
 class AlphaVantageClient:

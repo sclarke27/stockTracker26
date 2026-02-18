@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from stock_radar.mcp_servers.market_data.cache import Cache
+from stock_radar.utils.cache import Cache
 
 
 @pytest.fixture()

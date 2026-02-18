@@ -24,4 +24,7 @@ def sample_config() -> dict:
             "db_path": "data/test.db",
             "chroma_path": "data/test_chroma",
         },
+        "sec_edgar": {
+            "user_agent_email": "test@example.com",
+        },
     }

@@ -9,7 +9,7 @@ import respx
 from stock_radar.mcp_servers.market_data.clients.alpha_vantage import AlphaVantageClient
 from stock_radar.mcp_servers.market_data.config import AV_BASE_URL
 from stock_radar.mcp_servers.market_data.exceptions import ApiError, TickerNotFoundError
-from stock_radar.mcp_servers.market_data.rate_limiter import RateLimiter
+from stock_radar.utils.rate_limiter import RateLimiter
 
 
 @pytest.fixture()

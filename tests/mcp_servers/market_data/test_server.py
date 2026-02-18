@@ -30,6 +30,7 @@ MOCK_ENV = {
     "FINNHUB_API_KEY": "test-fh-key",
     "ANTHROPIC_API_KEY": "test-anthropic-key",
     "OLLAMA_HOST": "http://localhost:11434",
+    "SEC_EDGAR_EMAIL": "test@example.com",
 }
 
 

@@ -7,12 +7,11 @@ import time
 
 import pytest
 
-from stock_radar.mcp_servers.market_data.exceptions import RateLimitExceededError
-from stock_radar.mcp_servers.market_data.rate_limiter import RateLimiter
+from stock_radar.utils.rate_limiter import RateLimiter, RateLimitExceededError
 
 
 class TestRateLimiter:
-    """Tests for the RateLimiter class."""
+    """Tests for per-minute and per-day limiting."""
 
     async def test_first_request_passes_immediately(self) -> None:
         limiter = RateLimiter(requests_per_minute=5, requests_per_day=500)
@@ -68,3 +67,45 @@ class TestRateLimiter:
         # since the limit is 5/min.
         await asyncio.gather(*[acquire_one() for _ in range(5)])
         assert limiter.daily_remaining == 495
+
+
+class TestPerSecondLimiting:
+    """Tests for per-second rate limiting (e.g. SEC EDGAR 10/sec)."""
+
+    async def test_requests_within_second_limit_pass(self) -> None:
+        limiter = RateLimiter(
+            requests_per_minute=600,
+            requests_per_day=50_000,
+            requests_per_second=10,
+        )
+        for _ in range(10):
+            await limiter.acquire()
+
+    async def test_exceeding_second_limit_reports_wait(self) -> None:
+        limiter = RateLimiter(
+            requests_per_minute=600,
+            requests_per_day=50_000,
+            requests_per_second=2,
+        )
+        await limiter.acquire()
+        await limiter.acquire()
+        wait = await limiter.wait_time()
+        assert wait > 0
+
+    async def test_none_second_limit_skips_check(self) -> None:
+        """When requests_per_second is None, no per-second check occurs."""
+        limiter = RateLimiter(
+            requests_per_minute=5,
+            requests_per_day=500,
+            requests_per_second=None,
+        )
+        # Should behave like the old limiter — 5 requests pass immediately.
+        for _ in range(5):
+            await limiter.acquire()
+
+    async def test_backward_compatible_without_second_param(self) -> None:
+        """Existing callers that don't pass requests_per_second still work."""
+        limiter = RateLimiter(requests_per_minute=5, requests_per_day=500)
+        assert limiter._second_limit is None
+        for _ in range(5):
+            await limiter.acquire()

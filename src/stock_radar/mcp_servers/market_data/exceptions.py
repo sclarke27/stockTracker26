@@ -7,10 +7,6 @@ class MarketDataError(Exception):
     """Base exception for market data server errors."""
 
 
-class RateLimitExceededError(MarketDataError):
-    """Raised when the API rate limit is exhausted for the day."""
-
-
 class ApiError(MarketDataError):
     """Raised when an external API returns an error response."""
 

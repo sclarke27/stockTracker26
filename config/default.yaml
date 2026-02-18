@@ -15,3 +15,6 @@ ollama:
 cache:
   db_path: "data/stock_radar.db"
   chroma_path: "data/chroma_data"
+
+sec_edgar:
+  user_agent_email: "${SEC_EDGAR_EMAIL}"
