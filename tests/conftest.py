@@ -27,4 +27,7 @@ def sample_config() -> dict:
         "sec_edgar": {
             "user_agent_email": "test@example.com",
         },
+        "predictions": {
+            "db_path": "data/test_predictions.db",
+        },
     }

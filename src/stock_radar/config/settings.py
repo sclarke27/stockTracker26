@@ -37,6 +37,15 @@ class SecEdgarSettings(BaseModel):
     user_agent_email: str = Field(description="Contact email for SEC User-Agent header")
 
 
+class PredictionsSettings(BaseModel):
+    """Predictions database configuration."""
+
+    db_path: str = Field(
+        default="data/predictions.db",
+        description="SQLite database path for prediction storage",
+    )
+
+
 class AppSettings(BaseModel):
     """Top-level application settings."""
 
@@ -48,3 +57,7 @@ class AppSettings(BaseModel):
         default_factory=CacheSettings, description="Cache and storage settings"
     )
     sec_edgar: SecEdgarSettings = Field(description="SEC EDGAR configuration")
+    predictions: PredictionsSettings = Field(
+        default_factory=PredictionsSettings,
+        description="Predictions database settings",
+    )
