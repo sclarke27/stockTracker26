@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
-from mcp.types import TextContent
 
 from stock_radar.agents.earnings_linguist.models import (
     EarningsAnalysis,
@@ -15,6 +14,7 @@ from stock_radar.agents.earnings_linguist.models import (
 from stock_radar.agents.earnings_linguist.runner import run_earnings_linguist
 from stock_radar.agents.exceptions import TranscriptNotFoundError
 from stock_radar.agents.models import AgentOutput, AnalysisResult
+from tests.agents.helpers import mock_tool_response as _mock_tool_response
 
 
 def _sample_transcript_response() -> str:
@@ -47,10 +47,6 @@ def _sample_analysis() -> EarningsAnalysis:
         reasoning_summary="Strong forward guidance with optimistic tone.",
         horizon_days=5,
     )
-
-
-def _mock_tool_response(data: str) -> MagicMock:
-    return MagicMock(content=[MagicMock(spec=TextContent, text=data)])
 
 
 class TestRunEarningsLinguist:

@@ -16,7 +16,7 @@ from stock_radar.agents.sec_filing_analyzer.config import (
     MAX_INSIDER_TRANSACTIONS,
 )
 from stock_radar.agents.sec_filing_analyzer.models import SecFilingInput
-from stock_radar.config.loader import load_config
+from stock_radar.config.loader import load_settings
 from stock_radar.config.settings import AppSettings
 from stock_radar.llm.factory import create_anthropic_client, create_ollama_client
 from stock_radar.mcp_servers.predictions_db.server import (
@@ -36,8 +36,7 @@ def _load_settings() -> AppSettings:
     Returns:
         Populated AppSettings instance.
     """
-    config = load_config()
-    return AppSettings(**config)
+    return load_settings()
 
 
 async def run_sec_filing_analyzer(

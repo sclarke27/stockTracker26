@@ -9,6 +9,8 @@ from typing import cast
 
 import yaml
 
+from stock_radar.config.settings import AppSettings
+
 ENV_VAR_PATTERN = re.compile(r"\$\{(\w+)\}")
 
 _DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[3] / "config" / "default.yaml"
@@ -84,3 +86,20 @@ def load_config(path: Path | None = None) -> dict:
         raw = yaml.safe_load(f) or {}
 
     return cast(dict, _walk_and_interpolate(raw))
+
+
+def load_settings(path: Path | None = None) -> AppSettings:
+    """Load application settings from a YAML config file.
+
+    Convenience wrapper around :func:`load_config` that returns a
+    validated :class:`AppSettings` instance.
+
+    Args:
+        path: Path to the YAML config file.  Defaults to
+            ``config/default.yaml`` relative to the project root.
+
+    Returns:
+        Populated AppSettings instance.
+    """
+    config = load_config(path)
+    return AppSettings(**config)

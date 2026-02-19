@@ -3,18 +3,14 @@
 from __future__ import annotations
 
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
-from mcp.types import TextContent
 
 from stock_radar.agents.models import AgentOutput, AnalysisResult
 from stock_radar.agents.narrative_divergence.models import NarrativeDivergenceInput
 from stock_radar.agents.narrative_divergence.runner import run_narrative_divergence
-
-
-def _mock_tool_response(data: str) -> MagicMock:
-    return MagicMock(content=[MagicMock(spec=TextContent, text=data)])
+from tests.agents.helpers import mock_tool_response as _mock_tool_response
 
 
 def _sample_sentiment_response() -> str:

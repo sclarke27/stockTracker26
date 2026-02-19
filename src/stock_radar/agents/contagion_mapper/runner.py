@@ -13,7 +13,7 @@ from stock_radar.agents.contagion_mapper.agent import ContagionMapperAgent
 from stock_radar.agents.contagion_mapper.config import MAX_TARGET_NEWS, MAX_TRIGGER_NEWS
 from stock_radar.agents.contagion_mapper.models import ContagionInput
 from stock_radar.agents.models import AgentOutput
-from stock_radar.config.loader import load_config
+from stock_radar.config.loader import load_settings
 from stock_radar.config.settings import AppSettings
 from stock_radar.llm.factory import create_anthropic_client, create_ollama_client
 from stock_radar.mcp_servers.market_data.server import create_server as create_market_server
@@ -42,8 +42,7 @@ def _load_settings() -> AppSettings:
     Returns:
         Populated AppSettings instance.
     """
-    config = load_config()
-    return AppSettings(**config)
+    return load_settings()
 
 
 async def run_contagion_mapper(

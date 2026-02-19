@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock
 from stock_radar.agents.earnings_linguist.agent import EarningsLinguistAgent
 from stock_radar.agents.earnings_linguist.config import (
     AGENT_NAME,
+    DEFAULT_HORIZON_DAYS,
     ESCALATION_CONFIDENCE_THRESHOLD,
     ESCALATION_TRANSCRIPT_LENGTH,
     SIGNAL_TYPE,
@@ -163,8 +164,6 @@ class TestEarningsLinguistAnalyze:
 
     async def test_analyze_uses_default_horizon_when_missing(self) -> None:
         """Falls back to DEFAULT_HORIZON_DAYS when horizon_days is missing from analysis."""
-        from stock_radar.agents.earnings_linguist.config import DEFAULT_HORIZON_DAYS
-
         agent = EarningsLinguistAgent()
         # horizon_days defaults to DEFAULT_HORIZON_DAYS in the model already,
         # but we test that it passes through correctly.

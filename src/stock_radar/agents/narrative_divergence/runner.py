@@ -12,7 +12,7 @@ from stock_radar.agents.models import AgentOutput
 from stock_radar.agents.narrative_divergence.agent import NarrativeDivergenceAgent
 from stock_radar.agents.narrative_divergence.config import MAX_TOP_ARTICLES
 from stock_radar.agents.narrative_divergence.models import NarrativeDivergenceInput
-from stock_radar.config.loader import load_config
+from stock_radar.config.loader import load_settings
 from stock_radar.config.settings import AppSettings
 from stock_radar.llm.factory import create_anthropic_client, create_ollama_client
 from stock_radar.mcp_servers.market_data.server import create_server as create_market_server
@@ -33,8 +33,7 @@ def _load_settings() -> AppSettings:
     Returns:
         Populated AppSettings instance.
     """
-    config = load_config()
-    return AppSettings(**config)
+    return load_settings()
 
 
 def _compute_price_return(prices: list[dict], lookback_days: int) -> float:

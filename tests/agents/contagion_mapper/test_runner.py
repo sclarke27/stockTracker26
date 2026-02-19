@@ -3,17 +3,12 @@
 from __future__ import annotations
 
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
-
-from mcp.types import TextContent
+from unittest.mock import AsyncMock, patch
 
 from stock_radar.agents.contagion_mapper.models import ContagionInput
 from stock_radar.agents.contagion_mapper.runner import run_contagion_mapper
 from stock_radar.agents.models import AgentOutput, AnalysisResult
-
-
-def _mock_tool_response(data: str) -> MagicMock:
-    return MagicMock(content=[MagicMock(spec=TextContent, text=data)])
+from tests.agents.helpers import mock_tool_response as _mock_tool_response
 
 
 def _sample_company_info(ticker: str, name: str, sector: str) -> str:

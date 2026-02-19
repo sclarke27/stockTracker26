@@ -21,8 +21,8 @@ pairs:
   - trigger: MSFT
     target: GOOGL
     relationship: competitor
-  - trigger: TSLA
-    target: NIO
+  - trigger: NFLX
+    target: DIS
     relationship: competitor
   - trigger: JPM
     target: V

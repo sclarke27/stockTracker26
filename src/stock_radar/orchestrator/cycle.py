@@ -18,22 +18,11 @@ from pathlib import Path
 import yaml
 from loguru import logger
 
-from stock_radar.config.loader import load_config
-from stock_radar.config.settings import AppSettings
+from stock_radar.config.loader import load_settings
 from stock_radar.orchestrator.models import ContagionPairsConfig, CycleResult
 from stock_radar.orchestrator.phases import run_analysis, run_ingestion, run_scoring
 from stock_radar.pipeline.quarter import current_quarter
 from stock_radar.pipeline.watchlist import load_watchlist
-
-
-def load_settings() -> AppSettings:
-    """Load application settings from config.
-
-    Returns:
-        Populated AppSettings instance.
-    """
-    config = load_config()
-    return AppSettings(**config)
 
 
 def _load_contagion_pairs(path: str) -> ContagionPairsConfig:
