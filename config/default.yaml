@@ -62,3 +62,9 @@ agents:
 scoring:
   horizon_buffer_days: 1
   lookback_days: 365
+
+orchestrator:
+  enabled: true
+  contagion_pairs_path: "config/contagion_pairs.yaml"
+  skip_ingestion: false
+  skip_scoring: false

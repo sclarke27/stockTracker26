@@ -1,0 +1,29 @@
+# Contagion Mapper — Explicit ticker relationship mappings.
+# Each pair defines a trigger→target relationship for cross-sector analysis.
+# relationship values: supplier, customer, competitor, same_sector, distribution_partner
+
+pairs:
+  - trigger: NVDA
+    target: AMD
+    relationship: competitor
+  - trigger: NVDA
+    target: INTC
+    relationship: competitor
+  - trigger: AAPL
+    target: META
+    relationship: competitor
+  - trigger: AMZN
+    target: WMT
+    relationship: competitor
+  - trigger: GOOGL
+    target: META
+    relationship: competitor
+  - trigger: MSFT
+    target: GOOGL
+    relationship: competitor
+  - trigger: TSLA
+    target: NIO
+    relationship: competitor
+  - trigger: JPM
+    target: V
+    relationship: distribution_partner

@@ -197,6 +197,20 @@ class ScoringSettings(BaseModel):
     )
 
 
+class OrchestratorSettings(BaseModel):
+    """Orchestrator cycle configuration."""
+
+    enabled: bool = Field(default=True, description="Whether the orchestrator is active")
+    contagion_pairs_path: str = Field(
+        default="config/contagion_pairs.yaml",
+        description="Path to contagion pair definitions YAML",
+    )
+    skip_ingestion: bool = Field(
+        default=False, description="Skip pipeline ingestion phase if data is already fresh"
+    )
+    skip_scoring: bool = Field(default=False, description="Skip prediction scoring phase")
+
+
 class AppSettings(BaseModel):
     """Top-level application settings."""
 
@@ -217,4 +231,7 @@ class AppSettings(BaseModel):
     )
     scoring: ScoringSettings = Field(
         default_factory=ScoringSettings, description="Scoring runner settings"
+    )
+    orchestrator: OrchestratorSettings = Field(
+        default_factory=OrchestratorSettings, description="Orchestrator cycle settings"
     )
