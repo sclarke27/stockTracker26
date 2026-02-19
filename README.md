@@ -11,7 +11,7 @@ The edge is language analysis, not numerical time series.
 Two machines on the same local network:
 
 - **Desktop (RTX 4090)** -- runs Ollama for local LLM inference.
-- **Raspberry Pi 5** -- runs the orchestrator, dashboard API, and dashboard UI.
+- **Raspberry Pi 5** -- runs OpenClaw, the orchestrator, dashboard API, and dashboard UI.
 
 Only outbound connections are API calls to Alpha Vantage, Finnhub, SEC EDGAR,
 and Anthropic.
@@ -21,8 +21,9 @@ and Anthropic.
 ## Prerequisites
 
 - Python 3.11+
-- Node.js 20+ and pnpm
+- Node.js 22+ and pnpm
 - Ollama installed on the desktop (https://ollama.ai)
+- OpenClaw installed on the Pi (https://openclaw.ai)
 
 ---
 
@@ -201,15 +202,87 @@ Dev server runs on port 5173.
 
 ---
 
-## 6. Cron setup (Pi)
+## 6. OpenClaw setup (Pi)
 
-Example crontab for running the orchestrator daily at 6 AM Eastern:
+OpenClaw handles scheduling, monitoring, and notifications for Stock Radar.
+It runs on the Raspberry Pi and triggers the orchestrator on a cron schedule.
 
-```cron
-0 6 * * 1-5 cd /path/to/stock-radar && source .venv/bin/activate && stock-radar-orchestrate >> logs/orchestrator.log 2>&1
+### Install OpenClaw
+
+```bash
+npm install -g openclaw@latest
+openclaw onboard --install-daemon
 ```
 
-The dashboard API should run as a persistent service. Example systemd unit:
+### Configure OpenClaw
+
+Copy the reference config files from this repo to your OpenClaw directory:
+
+```bash
+# Gateway config
+cp openclaw/openclaw.json ~/.openclaw/openclaw.json
+
+# Cron jobs
+cp openclaw/cron-jobs.json ~/.openclaw/cron/jobs.json
+
+# Stock Radar skill
+cp -r openclaw/skills/stock-radar ~/.openclaw/skills/
+```
+
+Edit `~/.openclaw/openclaw.json` and update:
+
+- `agents.defaults.workspace` -- path to your stock-radar checkout
+- `models.providers.ollama-desktop.baseUrl` -- your desktop's IP address
+- `channels` -- uncomment and configure Telegram/Slack/etc. for notifications
+
+### Install the MCP adapter plugin
+
+This lets OpenClaw query the dashboard API directly:
+
+```bash
+openclaw plugins install mcp-adapter
+openclaw gateway restart
+```
+
+### Verify cron jobs
+
+```bash
+openclaw cron list
+```
+
+You should see two jobs:
+
+- **Stock Radar -- Daily Cycle** -- runs at 6:00 AM Eastern, weekdays
+- **Stock Radar -- Score Predictions** -- runs at 5:00 PM Eastern, weekdays
+
+Test the daily cycle immediately:
+
+```bash
+openclaw cron run "Stock Radar — Daily Cycle" --now
+```
+
+### Notifications
+
+To receive cycle results via Telegram, edit `~/.openclaw/openclaw.json`:
+
+```json5
+"channels": {
+  "telegram": {
+    "enabled": true,
+    "dmPolicy": "pairing"
+  }
+}
+```
+
+Then update the cron job delivery to target Telegram:
+
+```bash
+openclaw cron edit <job-id> --announce --channel telegram --to "<chat-id>"
+```
+
+### Dashboard API (systemd)
+
+The dashboard API should run as a persistent service, independent of OpenClaw:
 
 ```ini
 [Unit]
@@ -288,13 +361,15 @@ analysis, Claude API for complex multi-document synthesis.
 ### Orchestrator cycle
 
 ```
-stock-radar-orchestrate
-  Phase 1: Ingestion    -- fetch market data, filings, transcripts
-  Phase 2: Analysis     -- run agents against deep and light tickers
-  Phase 3: Scoring      -- score mature predictions against actual prices
+OpenClaw (cron schedule) --> stock-radar-orchestrate
+                                Phase 1: Ingestion    -- fetch market data, filings, transcripts
+                                Phase 2: Analysis     -- run agents against deep and light tickers
+                                Phase 3: Scoring      -- score mature predictions against actual prices
 ```
 
-Each phase is fault-tolerant. A failure in one does not block the next.
+OpenClaw triggers the orchestrator on a cron schedule (weekdays at 6 AM
+Eastern). Each phase is fault-tolerant. A failure in one does not block
+the next.
 
 ---
 
@@ -330,6 +405,12 @@ config/
   default.yaml            Main configuration
   watchlist.yaml           Tracked tickers by coverage tier
   contagion_pairs.yaml     Cross-sector ticker relationships
+
+openclaw/
+  openclaw.json            Reference OpenClaw gateway config (copy to ~/.openclaw/)
+  cron-jobs.json           Cron job definitions (copy to ~/.openclaw/cron/jobs.json)
+  skills/stock-radar/      OpenClaw skill for Stock Radar interaction
+    SKILL.md               Skill definition and instructions
 
 src/stock_radar/
   agents/                  4 analysis agents (earnings, narrative, SEC, contagion)

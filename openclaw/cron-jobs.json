@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Stock Radar — Daily Cycle",
+    "description": "Run the full orchestrator cycle: data ingestion, agent analysis, prediction scoring. Weekdays at 6:00 AM Eastern, before US market open.",
+    "enabled": true,
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 6 * * 1-5",
+      "tz": "America/New_York"
+    },
+    "sessionTarget": "isolated",
+    "payload": {
+      "kind": "agentTurn",
+      "message": "Run the Stock Radar daily analysis cycle. Execute: cd /home/pi/stock-radar && source .venv/bin/activate && stock-radar-orchestrate 2>&1. Report the results: how many predictions were generated, any errors, and total duration. If there were errors, summarize what went wrong.",
+      "timeoutSeconds": 600
+    },
+    "delivery": {
+      "mode": "announce",
+      "channel": "last",
+      "bestEffort": true
+    }
+  },
+  {
+    "name": "Stock Radar — Score Predictions",
+    "description": "Score mature predictions against actual price movements. Runs at 5:00 PM Eastern after market close on weekdays.",
+    "enabled": true,
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 17 * * 1-5",
+      "tz": "America/New_York"
+    },
+    "sessionTarget": "isolated",
+    "payload": {
+      "kind": "agentTurn",
+      "message": "Score Stock Radar predictions that have matured. Execute: cd /home/pi/stock-radar && source .venv/bin/activate && stock-radar-score 2>&1. Report the scoring results.",
+      "timeoutSeconds": 300
+    },
+    "delivery": {
+      "mode": "announce",
+      "channel": "last",
+      "bestEffort": true
+    }
+  }
+]

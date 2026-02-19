@@ -1,0 +1,101 @@
+{
+  // Stock Radar — OpenClaw Gateway Configuration
+  // Copy this file to ~/.openclaw/openclaw.json on the Raspberry Pi.
+  // Adjust paths and API keys to match your setup.
+
+  "agents": {
+    "defaults": {
+      "workspace": "/home/pi/stock-radar",
+      "model": {
+        "primary": "anthropic/claude-sonnet-4-20250514"
+      },
+      "timeoutSeconds": 600,
+      "heartbeat": {
+        "every": "60m",
+        "target": "none"
+      }
+    }
+  },
+
+  "tools": {
+    "allow": ["group:runtime", "group:fs", "mcp-adapter"]
+  },
+
+  "skills": {
+    "load": {
+      "extraDirs": ["/home/pi/stock-radar/openclaw/skills"]
+    }
+  },
+
+  "plugins": {
+    "enabled": true,
+    "entries": {
+      "mcp-adapter": {
+        "enabled": true,
+        "config": {
+          "toolPrefix": true,
+          "servers": [
+            {
+              "name": "dashboard",
+              "transport": "http",
+              "url": "http://localhost:8080/mcp"
+            }
+          ]
+        }
+      }
+    }
+  },
+
+  "cron": {
+    "enabled": true,
+    "maxConcurrentRuns": 1,
+    "sessionRetention": "24h"
+  },
+
+  // Model providers — connect to Ollama on the desktop for local inference.
+  // Update the IP to match your desktop's address on the local network.
+  "models": {
+    "providers": {
+      "ollama-desktop": {
+        "baseUrl": "http://192.168.1.100:11434/v1",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "llama3.1:8b",
+            "name": "Llama 3.1 8B",
+            "reasoning": false,
+            "input": ["text"],
+            "contextWindow": 128000,
+            "cost": { "input": 0, "output": 0 }
+          },
+          {
+            "id": "llama3.1:70b",
+            "name": "Llama 3.1 70B",
+            "reasoning": false,
+            "input": ["text"],
+            "contextWindow": 128000,
+            "cost": { "input": 0, "output": 0 }
+          }
+        ]
+      }
+    }
+  },
+
+  // Notifications — uncomment and configure the channel you want.
+  // See https://docs.openclaw.ai/gateway/configuration-reference
+  // "channels": {
+  //   "telegram": {
+  //     "enabled": true,
+  //     "dmPolicy": "pairing"
+  //   }
+  // },
+
+  "env": {
+    "shellEnv": { "enabled": true }
+  },
+
+  "logging": {
+    "level": "info",
+    "consoleLevel": "warn"
+  }
+}
