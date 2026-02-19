@@ -22,6 +22,7 @@ MOCK_ENV = {
     "ALPHA_VANTAGE_API_KEY": "test-av-key",
     "FINNHUB_API_KEY": "test-fh-key",
     "ANTHROPIC_API_KEY": "test-anthropic-key",
+    "OPENAI_API_KEY": "test-openai-key",
     "SEC_EDGAR_EMAIL": "test@example.com",
 }
 

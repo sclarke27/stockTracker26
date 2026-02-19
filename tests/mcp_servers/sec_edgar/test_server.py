@@ -25,6 +25,7 @@ MOCK_ENV = {
     "ALPHA_VANTAGE_API_KEY": "unused",
     "FINNHUB_API_KEY": "unused",
     "ANTHROPIC_API_KEY": "unused",
+    "OPENAI_API_KEY": "unused",
 }
 
 
