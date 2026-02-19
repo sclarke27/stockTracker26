@@ -11,6 +11,7 @@ class ApiKeys(BaseModel):
     alpha_vantage: str = Field(description="Alpha Vantage API key")
     finnhub: str = Field(description="Finnhub API key")
     anthropic: str = Field(default="", description="Anthropic Claude API key")
+    openai: str = Field(default="", description="OpenAI API key")
 
 
 class OllamaSettings(BaseModel):
@@ -72,6 +73,10 @@ class EarningsLinguistSettings(BaseModel):
         default="claude-sonnet-4-20250514",
         description="Anthropic model for escalation",
     )
+    openai_model: str = Field(
+        default="gpt-4o",
+        description="OpenAI model for escalation",
+    )
     temperature: float = Field(default=0.1, ge=0.0, le=2.0, description="LLM sampling temperature")
     max_tokens: int = Field(default=4096, gt=0, description="Maximum tokens to generate")
 
@@ -101,6 +106,10 @@ class NarrativeDivergenceSettings(BaseModel):
     anthropic_model: str = Field(
         default="claude-sonnet-4-20250514",
         description="Anthropic model for escalation",
+    )
+    openai_model: str = Field(
+        default="gpt-4o",
+        description="OpenAI model for escalation",
     )
     temperature: float = Field(default=0.1, ge=0.0, le=2.0, description="LLM sampling temperature")
     max_tokens: int = Field(default=2048, gt=0, description="Maximum tokens to generate")
@@ -132,6 +141,10 @@ class SecFilingAnalyzerSettings(BaseModel):
         default="claude-sonnet-4-20250514",
         description="Anthropic model for escalation",
     )
+    openai_model: str = Field(
+        default="gpt-4o",
+        description="OpenAI model for escalation",
+    )
     temperature: float = Field(default=0.1, ge=0.0, le=2.0, description="LLM sampling temperature")
     max_tokens: int = Field(default=2048, gt=0, description="Maximum tokens to generate")
 
@@ -156,6 +169,10 @@ class ContagionMapperSettings(BaseModel):
     anthropic_model: str = Field(
         default="claude-sonnet-4-20250514",
         description="Anthropic model for escalation",
+    )
+    openai_model: str = Field(
+        default="gpt-4o",
+        description="OpenAI model for escalation",
     )
     temperature: float = Field(default=0.1, ge=0.0, le=2.0, description="LLM sampling temperature")
     max_tokens: int = Field(default=2048, gt=0, description="Maximum tokens to generate")

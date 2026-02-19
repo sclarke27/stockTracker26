@@ -18,7 +18,11 @@ from stock_radar.agents.sec_filing_analyzer.config import (
 from stock_radar.agents.sec_filing_analyzer.models import SecFilingInput
 from stock_radar.config.loader import load_settings
 from stock_radar.config.settings import AppSettings
-from stock_radar.llm.factory import create_anthropic_client, create_ollama_client
+from stock_radar.llm.factory import (
+    create_anthropic_client,
+    create_ollama_client,
+    create_openai_client,
+)
 from stock_radar.mcp_servers.predictions_db.server import (
     create_server as create_predictions_server,
 )
@@ -77,6 +81,13 @@ async def run_sec_filing_analyzer(
             model=sf_settings.anthropic_model,
         )
 
+    openai_client = None
+    if settings.api_keys.openai:
+        openai_client = create_openai_client(
+            api_key=settings.api_keys.openai,
+            model=sf_settings.openai_model,
+        )
+
     # Create in-process MCP servers
     sec_edgar_server = create_sec_edgar_server()
     predictions_server = create_predictions_server()
@@ -132,6 +143,7 @@ async def run_sec_filing_analyzer(
             anthropic_client,
             predictions_client,
             vector_store_client,
+            openai_client=openai_client,
         )
 
 

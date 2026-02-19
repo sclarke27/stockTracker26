@@ -14,7 +14,11 @@ from stock_radar.agents.narrative_divergence.config import MAX_TOP_ARTICLES
 from stock_radar.agents.narrative_divergence.models import NarrativeDivergenceInput
 from stock_radar.config.loader import load_settings
 from stock_radar.config.settings import AppSettings
-from stock_radar.llm.factory import create_anthropic_client, create_ollama_client
+from stock_radar.llm.factory import (
+    create_anthropic_client,
+    create_ollama_client,
+    create_openai_client,
+)
 from stock_radar.mcp_servers.market_data.server import create_server as create_market_server
 from stock_radar.mcp_servers.news_feed.server import create_server as create_news_feed_server
 from stock_radar.mcp_servers.predictions_db.server import (
@@ -100,6 +104,13 @@ async def run_narrative_divergence(
             model=nd_settings.anthropic_model,
         )
 
+    openai_client = None
+    if settings.api_keys.openai:
+        openai_client = create_openai_client(
+            api_key=settings.api_keys.openai,
+            model=nd_settings.openai_model,
+        )
+
     # Create in-process MCP servers
     news_feed_server = create_news_feed_server()
     market_server = create_market_server()
@@ -174,6 +185,7 @@ async def run_narrative_divergence(
             anthropic_client,
             predictions_client,
             vector_store_client,
+            openai_client=openai_client,
         )
 
 

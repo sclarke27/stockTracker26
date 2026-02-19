@@ -5,6 +5,7 @@ from __future__ import annotations
 from stock_radar.config.settings import OllamaSettings
 from stock_radar.llm.anthropic_client import AnthropicClient
 from stock_radar.llm.ollama_client import OllamaClient
+from stock_radar.llm.openai_client import OpenAiClient
 
 
 def create_ollama_client(
@@ -43,3 +44,21 @@ def create_anthropic_client(
     if model:
         return AnthropicClient(api_key=api_key, model=model)
     return AnthropicClient(api_key=api_key)
+
+
+def create_openai_client(
+    api_key: str,
+    model: str | None = None,
+) -> OpenAiClient:
+    """Create an OpenAI client.
+
+    Args:
+        api_key: OpenAI API key.
+        model: Override model name. Uses default (gpt-4o) if None.
+
+    Returns:
+        Configured OpenAiClient instance.
+    """
+    if model:
+        return OpenAiClient(api_key=api_key, model=model)
+    return OpenAiClient(api_key=api_key)

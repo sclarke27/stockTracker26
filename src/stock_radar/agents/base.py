@@ -79,31 +79,41 @@ class BaseAgent(ABC):
         anthropic_client: LlmClient | None,
         predictions_client: Client,
         vector_store_client: Client,
+        openai_client: LlmClient | None = None,
     ) -> AgentOutput:
         """Execute the full agent lifecycle.
 
         Steps:
         1. Pre-analysis escalation check.
         2. Run analysis with the chosen LLM.
-        3. Post-analysis escalation check (low confidence retry).
+        3. Post-analysis escalation chain (low confidence retry).
         4. Log prediction to predictions-db-mcp.
         5. Store reasoning in vector-store-mcp.
         6. Fetch similar past reasoning for context.
         7. Return structured output.
 
+        Escalation tiers (in order): Ollama → OpenAI → Anthropic.
+        If only one cloud provider is configured, it handles all
+        escalation.  If neither is configured, pre-analysis escalation
+        raises ``EscalationError``; post-analysis logs a warning.
+
         Args:
             input_data: Structured input for this analysis.
             ollama_client: Local LLM client (default).
-            anthropic_client: Cloud LLM client (escalation), or None.
+            anthropic_client: Cloud LLM client (top-tier escalation), or None.
             predictions_client: FastMCP client for predictions-db-mcp.
             vector_store_client: FastMCP client for vector-store-mcp.
+            openai_client: Cloud LLM client (mid-tier escalation), or None.
 
         Returns:
             Complete agent output with prediction ID and reasoning.
 
         Raises:
-            EscalationError: If escalation is needed but no Anthropic client.
+            EscalationError: If escalation is needed but no cloud client available.
         """
+        # Build escalation chain: OpenAI (mid-tier) → Anthropic (top-tier)
+        escalation_clients = [c for c in (openai_client, anthropic_client) if c is not None]
+
         logger.info(
             "Agent starting",
             agent=self.agent_name,
@@ -114,36 +124,41 @@ class BaseAgent(ABC):
 
         # Step 1: Pre-analysis escalation check
         if self.should_escalate(input_data):
-            if anthropic_client is None:
+            if not escalation_clients:
                 raise EscalationError(
                     f"Escalation needed for {input_data.ticker} "
-                    f"but no Anthropic client configured"
+                    f"but no cloud LLM client configured"
                 )
+            # Use the highest available tier for pre-analysis escalation
+            chosen = escalation_clients[-1]
             logger.info(
                 "Pre-analysis escalation triggered",
                 agent=self.agent_name,
                 ticker=input_data.ticker,
             )
-            result = await self.analyze(input_data, anthropic_client)
+            result = await self.analyze(input_data, chosen)
             result = result.model_copy(update={"escalated": True})
         else:
             # Step 2: Run with local LLM
             result = await self.analyze(input_data, ollama_client)
 
-            # Step 3: Post-analysis escalation check
+            # Step 3: Post-analysis escalation chain
             if not result.escalated and self.should_escalate(input_data, result):
-                if anthropic_client is not None:
-                    logger.info(
-                        "Post-analysis escalation triggered",
-                        agent=self.agent_name,
-                        ticker=input_data.ticker,
-                        initial_confidence=result.confidence,
-                    )
-                    result = await self.analyze(input_data, anthropic_client)
-                    result = result.model_copy(update={"escalated": True})
+                if escalation_clients:
+                    for cloud_client in escalation_clients:
+                        logger.info(
+                            "Post-analysis escalation triggered",
+                            agent=self.agent_name,
+                            ticker=input_data.ticker,
+                            initial_confidence=result.confidence,
+                        )
+                        result = await self.analyze(input_data, cloud_client)
+                        result = result.model_copy(update={"escalated": True})
+                        if not self.should_escalate(input_data, result):
+                            break
                 else:
                     logger.warning(
-                        "Post-analysis escalation needed but no Anthropic client",
+                        "Post-analysis escalation needed but no cloud LLM client configured",
                         agent=self.agent_name,
                         ticker=input_data.ticker,
                     )

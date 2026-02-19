@@ -59,8 +59,14 @@ Required variables:
 |-----------------------|------------------------------------------------|--------------------------------------------------|
 | ALPHA_VANTAGE_API_KEY | Market data, prices, fundamentals, news        | https://www.alphavantage.co/support/#api-key     |
 | FINNHUB_API_KEY       | Earnings call transcripts                      | https://finnhub.io/register                      |
-| ANTHROPIC_API_KEY     | Claude API for complex analysis (escalation)   | https://console.anthropic.com/                   |
 | SEC_EDGAR_EMAIL       | Contact email for SEC EDGAR User-Agent header  | Use your own email                               |
+
+At least one of these cloud LLM keys is needed for escalation:
+
+| Variable              | Description                                    | Where to get it                                  |
+|-----------------------|------------------------------------------------|--------------------------------------------------|
+| ANTHROPIC_API_KEY     | Claude API -- top-tier escalation              | https://console.anthropic.com/                   |
+| OPENAI_API_KEY        | OpenAI API -- mid-tier escalation              | https://platform.openai.com/api-keys             |
 
 Optional:
 
@@ -355,8 +361,10 @@ Servers 1-5 use stdio transport (in-process). Server 6 uses HTTP.
 | SEC Filing Analyzer  | Filing pattern anomalies | 15 days | Deep + Light |
 | Contagion Mapper     | Cross-sector contagion   | 5 days  | Deep only    |
 
-Each agent follows the escalation model: Ollama (local, fast) for routine
-analysis, Claude API for complex multi-document synthesis.
+Each agent follows a tiered escalation model: Ollama (local, fast) for
+routine analysis, OpenAI for mid-tier escalation, Claude API for the most
+complex multi-document synthesis. Configure one or both cloud providers.
+If only one is configured, it handles all escalation.
 
 ### Orchestrator cycle
 

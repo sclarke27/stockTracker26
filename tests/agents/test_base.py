@@ -175,12 +175,12 @@ class TestBaseAgentRun:
         assert agent.analyze_calls[0] is anthropic
 
     @pytest.mark.asyncio
-    async def test_pre_analysis_escalation_no_anthropic_raises(self) -> None:
-        """Escalation needed but no Anthropic client raises EscalationError."""
+    async def test_pre_analysis_escalation_no_cloud_client_raises(self) -> None:
+        """Escalation needed but no cloud client raises EscalationError."""
         agent = _StubAgent(escalate=True)
         ollama = AsyncMock(spec=LlmClient)
 
-        with pytest.raises(EscalationError, match="no Anthropic client"):
+        with pytest.raises(EscalationError, match="no cloud LLM client"):
             await agent.run(
                 _make_input(),
                 ollama,
@@ -354,3 +354,123 @@ class TestBaseAgentRun:
 
         assert output.similar_past_reasoning == []
         assert output.prediction_id is not None
+
+
+class TestBaseAgentThreeTierEscalation:
+    """Tests for 3-tier escalation: Ollama → OpenAI → Anthropic."""
+
+    @pytest.mark.asyncio
+    async def test_pre_analysis_escalation_uses_top_tier(self) -> None:
+        """Pre-analysis escalation with both clients uses Anthropic (top tier)."""
+        result = _make_result(model_used="claude-sonnet-4-20250514")
+        agent = _StubAgent(result=result, escalate=True)
+        ollama = AsyncMock(spec=LlmClient)
+        openai = AsyncMock(spec=LlmClient)
+        anthropic = AsyncMock(spec=LlmClient)
+        pred_client = _mock_predictions_client()
+        vs_client = _mock_vector_store_client()
+
+        output = await agent.run(
+            _make_input(), ollama, anthropic, pred_client, vs_client, openai_client=openai
+        )
+
+        assert output.result.escalated is True
+        assert len(agent.analyze_calls) == 1
+        assert agent.analyze_calls[0] is anthropic
+
+    @pytest.mark.asyncio
+    async def test_pre_analysis_escalation_openai_only(self) -> None:
+        """Pre-analysis escalation with only OpenAI uses OpenAI."""
+        result = _make_result(model_used="gpt-4o")
+        agent = _StubAgent(result=result, escalate=True)
+        ollama = AsyncMock(spec=LlmClient)
+        openai = AsyncMock(spec=LlmClient)
+        pred_client = _mock_predictions_client()
+        vs_client = _mock_vector_store_client()
+
+        output = await agent.run(
+            _make_input(), ollama, None, pred_client, vs_client, openai_client=openai
+        )
+
+        assert output.result.escalated is True
+        assert len(agent.analyze_calls) == 1
+        assert agent.analyze_calls[0] is openai
+
+    @pytest.mark.asyncio
+    async def test_post_analysis_tries_openai_first(self) -> None:
+        """Post-analysis escalation tries OpenAI before Anthropic."""
+        low_conf = _make_result(confidence=0.2)
+        high_conf = _make_result(confidence=0.9, model_used="gpt-4o")
+        call_count = 0
+
+        class _TieredAgent(_StubAgent):
+            async def analyze(self, input_data, llm_client):
+                nonlocal call_count
+                self.analyze_calls.append(llm_client)
+                call_count += 1
+                if call_count == 1:
+                    return low_conf
+                return high_conf
+
+        agent = _TieredAgent(escalate=False)
+        ollama = AsyncMock(spec=LlmClient)
+        openai = AsyncMock(spec=LlmClient)
+        anthropic = AsyncMock(spec=LlmClient)
+        pred_client = _mock_predictions_client()
+        vs_client = _mock_vector_store_client()
+
+        output = await agent.run(
+            _make_input(), ollama, anthropic, pred_client, vs_client, openai_client=openai
+        )
+
+        # Ollama first, then OpenAI (which succeeds) — never reaches Anthropic
+        assert len(agent.analyze_calls) == 2
+        assert agent.analyze_calls[0] is ollama
+        assert agent.analyze_calls[1] is openai
+        assert output.result.confidence == 0.9
+
+    @pytest.mark.asyncio
+    async def test_post_analysis_escalates_through_all_tiers(self) -> None:
+        """If OpenAI also returns low confidence, escalation continues to Anthropic."""
+        call_count = 0
+
+        class _FullChainAgent(_StubAgent):
+            async def analyze(self, input_data, llm_client):
+                nonlocal call_count
+                self.analyze_calls.append(llm_client)
+                call_count += 1
+                if call_count <= 2:
+                    return _make_result(confidence=0.1)
+                return _make_result(confidence=0.95)
+
+        agent = _FullChainAgent(escalate=False)
+        ollama = AsyncMock(spec=LlmClient)
+        openai = AsyncMock(spec=LlmClient)
+        anthropic = AsyncMock(spec=LlmClient)
+        pred_client = _mock_predictions_client()
+        vs_client = _mock_vector_store_client()
+
+        output = await agent.run(
+            _make_input(), ollama, anthropic, pred_client, vs_client, openai_client=openai
+        )
+
+        # Full chain: Ollama → OpenAI → Anthropic
+        assert len(agent.analyze_calls) == 3
+        assert agent.analyze_calls[0] is ollama
+        assert agent.analyze_calls[1] is openai
+        assert agent.analyze_calls[2] is anthropic
+        assert output.result.confidence == 0.95
+
+    @pytest.mark.asyncio
+    async def test_post_analysis_no_cloud_keeps_result(self) -> None:
+        """Low confidence with no cloud clients keeps original result."""
+        low_conf = _make_result(confidence=0.2)
+        agent = _StubAgent(result=low_conf)
+        ollama = AsyncMock(spec=LlmClient)
+        pred_client = _mock_predictions_client()
+        vs_client = _mock_vector_store_client()
+
+        output = await agent.run(_make_input(), ollama, None, pred_client, vs_client)
+
+        assert output.result.confidence == 0.2
+        assert output.result.escalated is False
