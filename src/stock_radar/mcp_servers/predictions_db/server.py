@@ -44,11 +44,9 @@ def _get_db_path() -> str:
 
     Extracted as a function so tests can patch it with a temporary path.
     """
-    from stock_radar.config.loader import load_config
-    from stock_radar.config.settings import AppSettings
+    from stock_radar.config.loader import load_settings
 
-    config = load_config()
-    settings = AppSettings(**config)
+    settings = load_settings()
     return settings.predictions.db_path
 
 

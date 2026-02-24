@@ -42,11 +42,9 @@ def _get_db_path() -> str:
 
     Extracted as a function so tests can patch it with a temporary path.
     """
-    from stock_radar.config.loader import load_config
-    from stock_radar.config.settings import AppSettings
+    from stock_radar.config.loader import load_settings
 
-    config = load_config()
-    settings = AppSettings(**config)
+    settings = load_settings()
     return settings.cache.db_path
 
 
@@ -55,11 +53,9 @@ def _get_api_key() -> str:
 
     Extracted as a function so tests can patch environment variables.
     """
-    from stock_radar.config.loader import load_config
-    from stock_radar.config.settings import AppSettings
+    from stock_radar.config.loader import load_settings
 
-    config = load_config()
-    settings = AppSettings(**config)
+    settings = load_settings()
     return settings.api_keys.alpha_vantage
 
 
