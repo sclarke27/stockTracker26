@@ -220,5 +220,7 @@ class AlphaVantageClient:
         """
         if "Error Message" in data:
             raise ApiError(f"Alpha Vantage error: {data['Error Message']}")
+        if "Information" in data:
+            raise ApiError(f"Alpha Vantage rate limit: {data['Information']}")
         if "Note" in data:
             raise ApiError(f"Alpha Vantage rate limit: {data['Note']}")

@@ -237,6 +237,20 @@ class TestErrorHandling:
             await av_client.get_quote("AAPL")
 
     @respx.mock
+    async def test_rate_limit_information(self, av_client: AlphaVantageClient) -> None:
+        respx.get(AV_BASE_URL).mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "Information": "We have detected your API key and our standard "
+                    "API rate limit is 25 requests per day."
+                },
+            )
+        )
+        with pytest.raises(ApiError, match="rate limit"):
+            await av_client.get_quote("AAPL")
+
+    @respx.mock
     async def test_http_server_error(self, av_client: AlphaVantageClient) -> None:
         respx.get(AV_BASE_URL).mock(return_value=httpx.Response(500, text="Internal Server Error"))
         with pytest.raises(ApiError):

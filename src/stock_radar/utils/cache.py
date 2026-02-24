@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from pathlib import Path
 
 import aiosqlite
 
@@ -28,6 +29,7 @@ class Cache:
 
         Enables WAL mode for better concurrent read performance.
         """
+        Path(self._db_path).parent.mkdir(parents=True, exist_ok=True)
         self._db = await aiosqlite.connect(self._db_path)
         await self._db.execute("PRAGMA journal_mode=WAL")
         await self._db.execute("""

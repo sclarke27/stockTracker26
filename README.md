@@ -68,37 +68,44 @@ At least one of these cloud LLM keys is needed for escalation:
 | ANTHROPIC_API_KEY     | Claude API -- top-tier escalation              | https://console.anthropic.com/                   |
 | OPENAI_API_KEY        | OpenAI API -- mid-tier escalation              | https://platform.openai.com/api-keys             |
 
-Optional:
-
-| Variable    | Default                    | Description              |
-|-------------|----------------------------|--------------------------|
-| OLLAMA_HOST | http://localhost:11434     | Ollama server address    |
-
 ## 3. Ollama setup (desktop)
 
-Install the models the agents use:
+All agents run `llama3.1:8b` locally for routine analysis. When an agent
+needs escalation (low confidence or complex input), it calls OpenAI or
+Anthropic cloud APIs instead — not a larger local model.
+
+Pull the default model:
 
 ```bash
 ollama pull llama3.1:8b
-ollama pull llama3.1:70b
 ```
 
-If the Pi needs to reach Ollama over the network, start Ollama bound to
-all interfaces and set `OLLAMA_HOST` in `.env` to the desktop's IP:
+To use a different model, set `ollama.default_model` in
+`config/default.yaml`, or override per-agent with the `ollama_model`
+field under each agent's config section.
+
+### Network access (required)
+
+The Pi runs the orchestrator; the desktop runs Ollama. The Pi must be
+able to reach Ollama over the local network.
+
+On the desktop, start Ollama bound to all interfaces:
 
 ```bash
-# On the desktop
 OLLAMA_HOST=0.0.0.0 ollama serve
-
-# In .env on the Pi
-OLLAMA_HOST=http://192.168.x.x:11434
 ```
 
-Also update `config/default.yaml` to match:
+Then update `config/default.yaml` on the Pi with the desktop's LAN IP:
 
 ```yaml
 ollama:
   host: "http://192.168.x.x:11434"
+```
+
+Verify connectivity from the Pi:
+
+```bash
+curl http://192.168.x.x:11434/api/tags
 ```
 
 ## 4. Configuration

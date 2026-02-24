@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import aiosqlite
 from loguru import logger
 
@@ -91,6 +93,7 @@ class PredictionsStore:
 
         Safe to call multiple times (``CREATE … IF NOT EXISTS``).
         """
+        Path(self._db_path).parent.mkdir(parents=True, exist_ok=True)
         self._db = await aiosqlite.connect(self._db_path)
         self._db.row_factory = aiosqlite.Row
         await self._db.execute("PRAGMA journal_mode=WAL")

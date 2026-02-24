@@ -45,7 +45,6 @@ class TestOllamaSettings:
         settings = OllamaSettings()
         assert settings.host == "http://localhost:11434"
         assert settings.default_model == "llama3.1:8b"
-        assert settings.large_model == "llama3.1:70b"
         assert settings.timeout_seconds == 30
 
     def test_override_values(self) -> None:

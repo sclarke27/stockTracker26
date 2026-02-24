@@ -21,7 +21,6 @@ class OllamaSettings(BaseModel):
     default_model: str = Field(
         default="llama3.1:8b", description="Default model for routine analysis"
     )
-    large_model: str = Field(default="llama3.1:70b", description="Large model for complex analysis")
     timeout_seconds: int = Field(default=30, description="Max inference time before timeout")
 
 

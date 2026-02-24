@@ -17,7 +17,6 @@ def sample_config() -> dict:
         "ollama": {
             "host": "http://localhost:11434",
             "default_model": "llama3.1:8b",
-            "large_model": "llama3.1:70b",
             "timeout_seconds": 30,
         },
         "cache": {
