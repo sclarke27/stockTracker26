@@ -15,6 +15,7 @@ from stock_radar.mcp_servers.sec_edgar.config import (
     DEFAULT_MAX_FILING_TEXT_LENGTH,
     SEC_ARCHIVES_URL,
     SEC_EFTS_URL,
+    SEC_FILING_INDEX_URL,
     SEC_SUBMISSIONS_URL,
     SEC_TICKERS_URL,
     SERVER_NAME,
@@ -242,11 +243,22 @@ class EdgarClient:
             accession_number = recent["accessionNumber"][i]
             primary_doc = recent["primaryDocument"][i]
             accession_no_dashes = accession_number.replace("-", "")
+            stripped_cik = cik.lstrip("0") or "0"
+
+            # Resolve XML document: use primaryDocument if XML, otherwise
+            # fetch the filing index to find the XML source.
+            xml_doc = primary_doc if primary_doc.lower().endswith(".xml") else None
+            if xml_doc is None:
+                xml_doc = await self._find_xml_document(
+                    stripped_cik, accession_no_dashes, accession_number,
+                )
+            if xml_doc is None:
+                continue
 
             url = SEC_ARCHIVES_URL.format(
-                cik=cik.lstrip("0") or "0",
+                cik=stripped_cik,
                 accession=accession_no_dashes,
-                document=primary_doc,
+                document=xml_doc,
             )
 
             try:
@@ -334,6 +346,53 @@ class EdgarClient:
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
+
+    async def _find_xml_document(
+        self,
+        cik: str,
+        accession_no_dashes: str,
+        accession_number: str,
+    ) -> str | None:
+        """Find the XML document for a filing by fetching its index.
+
+        When a Form 4's primaryDocument is HTML, the actual XML source is
+        still available in the filing directory. This method fetches the
+        filing index JSON and looks for an ``.xml`` file.
+
+        Args:
+            cik: CIK number (stripped of leading zeros).
+            accession_no_dashes: Accession number without dashes.
+            accession_number: Original accession number (for logging).
+
+        Returns:
+            The XML document filename, or ``None`` if not found.
+        """
+        index_url = SEC_FILING_INDEX_URL.format(
+            cik=cik,
+            accession=accession_no_dashes,
+        )
+        try:
+            response = await self._request(index_url)
+            index_data = response.json()
+        except (ApiError, ValueError):
+            logger.warning(
+                "Failed to fetch filing index",
+                accession=accession_number,
+                server=SERVER_NAME,
+            )
+            return None
+
+        for item in index_data.get("directory", {}).get("item", []):
+            name = item.get("name", "")
+            if name.lower().endswith(".xml"):
+                return name
+
+        logger.debug(
+            "No XML document in filing index",
+            accession=accession_number,
+            server=SERVER_NAME,
+        )
+        return None
 
     async def _request(
         self,

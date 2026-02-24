@@ -8,6 +8,7 @@ SERVER_NAME = "sec-edgar-mcp"
 # SEC EDGAR base URLs
 SEC_SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{cik}.json"
 SEC_ARCHIVES_URL = "https://www.sec.gov/Archives/edgar/data/{cik}/{accession}/{document}"
+SEC_FILING_INDEX_URL = "https://www.sec.gov/Archives/edgar/data/{cik}/{accession}/index.json"
 SEC_TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
 SEC_EFTS_URL = "https://efts.sec.gov/LATEST/search-index"
 

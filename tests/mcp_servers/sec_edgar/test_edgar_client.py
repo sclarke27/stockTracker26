@@ -341,6 +341,50 @@ class TestGetInsiderTransactions:
         assert txn.price_per_share == 185.50
 
     @respx.mock
+    async def test_html_primary_doc_falls_back_to_index(
+        self, edgar_client: EdgarClient,
+    ) -> None:
+        """When primaryDocument is HTML, fetch the filing index to find the XML."""
+        html_submissions = {
+            **SAMPLE_SUBMISSIONS,
+            "filings": {
+                "recent": {
+                    "accessionNumber": ["0000320193-25-000010"],
+                    "filingDate": ["2025-02-01"],
+                    "form": ["4"],
+                    "primaryDocument": ["xslF345X05/form4.htm"],
+                    "primaryDocDescription": ["Statement of Changes"],
+                },
+                "files": [],
+            },
+        }
+        respx.get(SEC_TICKERS_URL).mock(
+            return_value=httpx.Response(200, json=SAMPLE_COMPANY_TICKERS)
+        )
+        respx.get(url__startswith="https://data.sec.gov/submissions/").mock(
+            return_value=httpx.Response(200, json=html_submissions)
+        )
+        # Filing index lists the XML document.
+        filing_index = {
+            "directory": {
+                "item": [
+                    {"name": "xslF345X05/form4.htm", "type": "text/html"},
+                    {"name": "form4.xml", "type": "text/xml"},
+                ],
+            },
+        }
+        respx.get(url__regex=r".*/index\.json$").mock(
+            return_value=httpx.Response(200, json=filing_index)
+        )
+        # XML fetch should use the discovered filename.
+        respx.get(url__regex=r".*/form4\.xml$").mock(
+            return_value=httpx.Response(200, text=SAMPLE_FORM4_XML)
+        )
+        result = await edgar_client.get_insider_transactions("AAPL")
+        assert len(result.transactions) >= 1
+        assert result.transactions[0].owner_name == "Cook Timothy D"
+
+    @respx.mock
     async def test_no_insider_filings(self, edgar_client: EdgarClient) -> None:
         no_insider_submissions = {
             **SAMPLE_SUBMISSIONS,
