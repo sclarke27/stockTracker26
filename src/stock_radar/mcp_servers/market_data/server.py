@@ -15,6 +15,7 @@ from stock_radar.mcp_servers.market_data.clients.finnhub import FinnhubClient
 from stock_radar.mcp_servers.market_data.config import (
     AV_RATE_LIMIT_PER_DAY,
     AV_RATE_LIMIT_PER_MINUTE,
+    AV_RATE_LIMIT_PER_SECOND,
     CACHE_TTL_COMPANY_INFO,
     CACHE_TTL_PRICE_HISTORY,
     CACHE_TTL_QUOTE,
@@ -77,6 +78,7 @@ async def lifespan(server: FastMCP) -> AsyncIterator[ServerDeps]:
 
     http_client = httpx.AsyncClient(timeout=30.0)
     rate_limiter = RateLimiter(
+        requests_per_second=AV_RATE_LIMIT_PER_SECOND,
         requests_per_minute=AV_RATE_LIMIT_PER_MINUTE,
         requests_per_day=AV_RATE_LIMIT_PER_DAY,
     )

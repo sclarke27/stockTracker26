@@ -10,6 +10,7 @@ CACHE_TTL_TRANSCRIPT: int | None = None  # Never expires
 CACHE_TTL_TICKER_SEARCH = 86_400  # 24 hours
 
 # Alpha Vantage rate limits
+AV_RATE_LIMIT_PER_SECOND = 1
 AV_RATE_LIMIT_PER_MINUTE = 5
 AV_RATE_LIMIT_PER_DAY = 500
 
