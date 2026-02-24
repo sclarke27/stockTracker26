@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 import yaml
 
-from stock_radar.config.loader import load_config
+from stock_radar.config.loader import load_config, load_settings
 
 
 @pytest.fixture()
@@ -94,3 +94,59 @@ class TestLoadConfig:
             config = load_config()
         assert "api_keys" in config
         assert "cache" in config
+
+
+class TestLoadSettings:
+    """Tests for load_settings() dotenv integration."""
+
+    def test_loads_env_from_dotenv_file(self, tmp_path: Path) -> None:
+        """load_settings() should auto-load .env before interpolating."""
+        env_file = tmp_path / ".env"
+        env_file.write_text(
+            "AV_KEY=from-dotenv\nFH_KEY=fh\nANT_KEY=ant\nEDGAR_EMAIL=e@e.com\n"
+        )
+
+        config_content = {
+            "api_keys": {
+                "alpha_vantage": "${AV_KEY}",
+                "finnhub": "${FH_KEY}",
+                "anthropic": "${ANT_KEY}",
+            },
+            "sec_edgar": {"user_agent_email": "${EDGAR_EMAIL}"},
+        }
+        config_file = tmp_path / "config.yaml"
+        config_file.write_text(yaml.dump(config_content))
+
+        with (
+            patch("stock_radar.config.loader._DEFAULT_ENV_PATH", env_file),
+            patch("stock_radar.config.loader._DEFAULT_CONFIG_PATH", config_file),
+            patch.dict("os.environ", {}, clear=True),
+        ):
+            settings = load_settings()
+        assert settings.api_keys.alpha_vantage == "from-dotenv"
+
+    def test_env_vars_override_dotenv(self, tmp_path: Path) -> None:
+        """Explicit env vars should take precedence over .env file values."""
+        env_file = tmp_path / ".env"
+        env_file.write_text(
+            "AV_KEY=from-dotenv\nFH_KEY=fh\nANT_KEY=ant\nEDGAR_EMAIL=e@e.com\n"
+        )
+
+        config_content = {
+            "api_keys": {
+                "alpha_vantage": "${AV_KEY}",
+                "finnhub": "${FH_KEY}",
+                "anthropic": "${ANT_KEY}",
+            },
+            "sec_edgar": {"user_agent_email": "${EDGAR_EMAIL}"},
+        }
+        config_file = tmp_path / "config.yaml"
+        config_file.write_text(yaml.dump(config_content))
+
+        with (
+            patch("stock_radar.config.loader._DEFAULT_ENV_PATH", env_file),
+            patch("stock_radar.config.loader._DEFAULT_CONFIG_PATH", config_file),
+            patch.dict("os.environ", {"AV_KEY": "from-env"}, clear=True),
+        ):
+            settings = load_settings()
+        assert settings.api_keys.alpha_vantage == "from-env"

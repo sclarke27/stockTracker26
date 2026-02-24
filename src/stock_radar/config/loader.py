@@ -8,12 +8,15 @@ from pathlib import Path
 from typing import cast
 
 import yaml
+from dotenv import load_dotenv
 
 from stock_radar.config.settings import AppSettings
 
 ENV_VAR_PATTERN = re.compile(r"\$\{(\w+)\}")
 
-_DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[3] / "config" / "default.yaml"
+_PROJECT_ROOT = Path(__file__).resolve().parents[3]
+_DEFAULT_CONFIG_PATH = _PROJECT_ROOT / "config" / "default.yaml"
+_DEFAULT_ENV_PATH = _PROJECT_ROOT / ".env"
 
 
 def _interpolate_env_vars(value: str) -> str:
@@ -101,5 +104,6 @@ def load_settings(path: Path | None = None) -> AppSettings:
     Returns:
         Populated AppSettings instance.
     """
+    load_dotenv(_DEFAULT_ENV_PATH, override=False)
     config = load_config(path)
     return AppSettings(**config)
