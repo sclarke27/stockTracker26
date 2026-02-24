@@ -32,6 +32,25 @@ let _initPromise: Promise<void> | null = null;
 // Session management
 // ---------------------------------------------------------------------------
 
+/**
+ * Parse a Server-Sent Events text body and return the last JSON-RPC message.
+ *
+ * SSE format: lines of `event: <type>\ndata: <json>\n\n`.
+ * We collect all `data:` lines and parse the last complete one.
+ */
+function parseSseJson(text: string): Record<string, unknown> {
+	const dataLines: string[] = [];
+	for (const line of text.split("\n")) {
+		if (line.startsWith("data: ")) {
+			dataLines.push(line.slice(6));
+		}
+	}
+	if (dataLines.length === 0) {
+		throw new Error("No data lines found in SSE response");
+	}
+	return JSON.parse(dataLines[dataLines.length - 1]) as Record<string, unknown>;
+}
+
 /** Send a JSON-RPC request to the MCP endpoint and return the parsed body. */
 async function mcpPost(body: Record<string, unknown>): Promise<{
 	json: Record<string, unknown>;
@@ -53,7 +72,16 @@ async function mcpPost(body: Record<string, unknown>): Promise<{
 		throw new Error(`MCP error ${res.status}: ${text}`);
 	}
 
-	const json = (await res.json()) as Record<string, unknown>;
+	const contentType = res.headers.get("content-type") ?? "";
+	let json: Record<string, unknown>;
+
+	if (contentType.includes("text/event-stream")) {
+		const text = await res.text();
+		json = parseSseJson(text);
+	} else {
+		json = (await res.json()) as Record<string, unknown>;
+	}
+
 	return { json, headers: res.headers };
 }
 
