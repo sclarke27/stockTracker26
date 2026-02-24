@@ -85,6 +85,19 @@ class TestGetEarningsTranscript:
             await fh_client.get_earnings_transcript("XYZ", quarter=1, year=2025)
 
     @respx.mock
+    async def test_redirect_raises_ticker_not_found(self, fh_client: FinnhubClient) -> None:
+        """Finnhub returns 302 → '/' when a transcript doesn't exist."""
+        respx.get(f"{FINNHUB_BASE_URL}/stock/transcript").mock(
+            return_value=httpx.Response(
+                302,
+                headers={"Location": "/"},
+                text='<a href="/">Found</a>.',
+            )
+        )
+        with pytest.raises(TickerNotFoundError, match="302 redirect"):
+            await fh_client.get_earnings_transcript("AAPL", quarter=4, year=2025)
+
+    @respx.mock
     async def test_http_error(self, fh_client: FinnhubClient) -> None:
         respx.get(f"{FINNHUB_BASE_URL}/stock/transcript").mock(
             return_value=httpx.Response(500, text="Server Error")

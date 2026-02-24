@@ -91,6 +91,13 @@ class FinnhubClient:
             response = await self._http.get(url, params=params, headers=headers)
             response.raise_for_status()
         except httpx.HTTPStatusError as exc:
+            # Finnhub redirects to "/" when a resource doesn't exist (e.g.
+            # transcript not yet available).  Surface this as TickerNotFoundError
+            # so callers can handle it gracefully rather than as a generic API error.
+            if exc.response.is_redirect:
+                raise TickerNotFoundError(
+                    f"Finnhub resource not found (302 redirect): {endpoint}"
+                ) from exc
             raise ApiError(
                 f"Finnhub HTTP {exc.response.status_code}: " f"{exc.response.text[:200]}"
             ) from exc
