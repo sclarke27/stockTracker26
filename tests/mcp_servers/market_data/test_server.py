@@ -18,11 +18,13 @@ from tests.mcp_servers.market_data.test_alpha_vantage_client import (
     SAMPLE_SEARCH_RESPONSE,
 )
 from tests.mcp_servers.market_data.test_finnhub_client import (
-    SAMPLE_TRANSCRIPT_RESPONSE,
+    SAMPLE_TRANSCRIPT,
+    SAMPLE_TRANSCRIPT_LIST,
 )
 
 AV_URL = "https://www.alphavantage.co/query"
-FH_URL = "https://finnhub.io/api/v1/stock/transcript"
+FH_LIST_URL = "https://finnhub.io/api/v1/stock/transcripts/list"
+FH_TRANSCRIPT_URL = "https://finnhub.io/api/v1/stock/transcripts"
 
 MOCK_ENV = {
     "ALPHA_VANTAGE_API_KEY": "test-av-key",
@@ -115,7 +117,12 @@ class TestServerTools:
 
     @respx.mock
     async def test_get_earnings_transcript(self, tmp_db: str) -> None:
-        respx.get(FH_URL).mock(return_value=httpx.Response(200, json=SAMPLE_TRANSCRIPT_RESPONSE))
+        respx.get(FH_LIST_URL).mock(
+            return_value=httpx.Response(200, json=SAMPLE_TRANSCRIPT_LIST)
+        )
+        respx.get(FH_TRANSCRIPT_URL).mock(
+            return_value=httpx.Response(200, json=SAMPLE_TRANSCRIPT)
+        )
         with (
             patch.dict("os.environ", MOCK_ENV),
             patch(

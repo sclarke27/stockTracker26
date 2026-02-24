@@ -33,6 +33,10 @@ class FinnhubClient:
     ) -> EarningsTranscriptResponse:
         """Fetch an earnings call transcript for a specific quarter.
 
+        Uses a two-step flow: first lists available transcripts for the
+        ticker to find the ID matching the requested quarter/year, then
+        fetches the full transcript by ID.
+
         Args:
             ticker: Stock ticker symbol.
             quarter: Fiscal quarter (1-4).
@@ -43,16 +47,36 @@ class FinnhubClient:
 
         Raises:
             TickerNotFoundError: If no transcript is available.
-            ApiError: On HTTP errors.
+            ApiError: On HTTP errors (including 403 for premium-only access).
         """
+        # Step 1: find the transcript ID for the requested quarter/year.
+        listing = await self._request(
+            "/stock/transcripts/list",
+            params={"symbol": ticker},
+        )
+
+        transcript_id = None
+        for entry in listing.get("transcripts", []):
+            if entry.get("quarter") == quarter and entry.get("year") == year:
+                transcript_id = entry.get("id")
+                break
+
+        if transcript_id is None:
+            raise TickerNotFoundError(
+                f"No earnings transcript for {ticker} Q{quarter} {year}."
+            )
+
+        # Step 2: fetch the full transcript by ID.
         data = await self._request(
-            "/stock/transcript",
-            params={"symbol": ticker, "quarter": str(quarter), "year": str(year)},
+            "/stock/transcripts",
+            params={"id": transcript_id},
         )
 
         transcript_entries = data.get("transcript", [])
         if not transcript_entries:
-            raise TickerNotFoundError(f"No earnings transcript for {ticker} Q{quarter} {year}.")
+            raise TickerNotFoundError(
+                f"Empty transcript for {ticker} Q{quarter} {year} (id={transcript_id})."
+            )
 
         content = self._format_transcript(transcript_entries)
 
@@ -60,7 +84,7 @@ class FinnhubClient:
             ticker=ticker,
             quarter=quarter,
             year=year,
-            date=data.get("date", ""),
+            date=data.get("time", ""),
             content=content,
         )
 
@@ -68,14 +92,15 @@ class FinnhubClient:
         """Make an authenticated request to the Finnhub API.
 
         Args:
-            endpoint: API path (e.g. ``"/stock/transcript"``).
+            endpoint: API path (e.g. ``"/stock/transcripts"``).
             params: Query parameters.
 
         Returns:
             Parsed JSON response.
 
         Raises:
-            ApiError: On HTTP errors.
+            ApiError: On HTTP errors (403 for premium-only endpoints, etc.).
+            TickerNotFoundError: On 302 redirects (deprecated endpoints).
         """
         url = f"{FINNHUB_BASE_URL}{endpoint}"
         headers = {"X-Finnhub-Token": self._api_key}
@@ -91,12 +116,13 @@ class FinnhubClient:
             response = await self._http.get(url, params=params, headers=headers)
             response.raise_for_status()
         except httpx.HTTPStatusError as exc:
-            # Finnhub redirects to "/" when a resource doesn't exist (e.g.
-            # transcript not yet available).  Surface this as TickerNotFoundError
-            # so callers can handle it gracefully rather than as a generic API error.
             if exc.response.is_redirect:
                 raise TickerNotFoundError(
                     f"Finnhub resource not found (302 redirect): {endpoint}"
+                ) from exc
+            if exc.response.status_code == 403:
+                raise ApiError(
+                    f"Finnhub 403: endpoint {endpoint} requires a premium plan"
                 ) from exc
             raise ApiError(
                 f"Finnhub HTTP {exc.response.status_code}: " f"{exc.response.text[:200]}"
