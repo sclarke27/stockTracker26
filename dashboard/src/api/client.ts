@@ -28,7 +28,7 @@ let _requestId = 1;
  * @returns Parsed JSON response from the tool.
  */
 async function callTool<T>(tool: string, args: Record<string, unknown> = {}): Promise<T> {
-	const res = await fetch(`${BASE_URL}/mcp/`, {
+	const res = await fetch(`${BASE_URL}/mcp`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
