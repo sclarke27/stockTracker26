@@ -191,7 +191,7 @@ Start the dashboard API server:
 stock-radar-dashboard-mcp
 ```
 
-This starts an HTTP server on port 8080. The dashboard frontend connects
+This starts an HTTP server on port 8081. The dashboard frontend connects
 to it.
 
 Serve the built frontend:
@@ -355,7 +355,7 @@ interface:
 3. predictions-db-mcp -- prediction logging and scoring
 4. vector-store-mcp -- ChromaDB semantic search
 5. news-feed-mcp -- Alpha Vantage news sentiment + RSS feeds
-6. dashboard-mcp -- read-only HTTP API for the dashboard (port 8080)
+6. dashboard-mcp -- read-only HTTP API for the dashboard (port 8081)
 
 Servers 1-5 use stdio transport (in-process). Server 6 uses HTTP.
 

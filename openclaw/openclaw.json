@@ -38,7 +38,7 @@
             {
               "name": "dashboard",
               "transport": "http",
-              "url": "http://localhost:8080/mcp"
+              "url": "http://localhost:8081/mcp"
             }
           ]
         }

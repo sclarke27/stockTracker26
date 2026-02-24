@@ -25,7 +25,7 @@ export default defineConfig({
 				globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
 				runtimeCaching: [
 					{
-						urlPattern: /^http:\/\/localhost:8080/,
+						urlPattern: /^http:\/\/localhost:8081/,
 						handler: 'NetworkFirst',
 						options: {
 							cacheName: 'dashboard-api',

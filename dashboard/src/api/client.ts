@@ -14,7 +14,7 @@ import type {
 	WatchlistResponse,
 } from "./types";
 
-const BASE_URL = (import.meta.env["VITE_DASHBOARD_URL"] as string | undefined) ?? "http://localhost:8080";
+const BASE_URL = (import.meta.env["VITE_DASHBOARD_URL"] as string | undefined) ?? "http://localhost:8081";
 
 let _requestId = 1;
 
