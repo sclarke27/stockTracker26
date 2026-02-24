@@ -46,7 +46,7 @@ stock-radar-score                    # Score mature predictions
 ### Dashboard API
 
 ```bash
-stock-radar-dashboard-mcp            # HTTP API on port 8081
+stock-radar-dashboard-mcp            # HTTP API on port 8082
 ```
 
 The dashboard API is a persistent service (runs via systemd). It provides read-only access to active signals, watchlist status, and agent performance.
