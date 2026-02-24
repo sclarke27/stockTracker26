@@ -6,6 +6,7 @@ import re
 import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 from io import StringIO
+from pathlib import Path
 
 import httpx
 from loguru import logger
@@ -245,10 +246,15 @@ class EdgarClient:
             accession_no_dashes = accession_number.replace("-", "")
             stripped_cik = cik.lstrip("0") or "0"
 
-            # Resolve XML document: use primaryDocument if XML, otherwise
-            # fetch the filing index to find the XML source.
-            xml_doc = primary_doc if primary_doc.lower().endswith(".xml") else None
-            if xml_doc is None:
+            # Resolve the raw XML document name.  EDGAR's primaryDocument
+            # often has an XSLT prefix (e.g. "xslF345X05/file.xml") which
+            # causes the server to return rendered HTML.  Using the basename
+            # gives us the raw XML.  For non-XML primary docs, fall back to
+            # the filing index.
+            basename = Path(primary_doc).name
+            if basename.lower().endswith(".xml"):
+                xml_doc = basename
+            else:
                 xml_doc = await self._find_xml_document(
                     stripped_cik, accession_no_dashes, accession_number,
                 )

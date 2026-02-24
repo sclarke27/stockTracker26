@@ -43,7 +43,12 @@ SAMPLE_SUBMISSIONS = {
             ],
             "filingDate": ["2025-01-15", "2025-01-10", "2024-12-15", "2024-11-20"],
             "form": ["8-K", "4", "10-K", "4"],
-            "primaryDocument": ["doc1.htm", "doc2.xml", "doc3.htm", "doc4.xml"],
+            "primaryDocument": [
+                "doc1.htm",
+                "xslF345X05/wk-form4_0002.xml",
+                "doc3.htm",
+                "xslF345X05/wk-form4_0004.xml",
+            ],
             "primaryDocDescription": [
                 "Current Report",
                 "Statement of Changes",
