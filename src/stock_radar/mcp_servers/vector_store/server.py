@@ -178,7 +178,7 @@ async def search_similar(
             document_id=r["id"],
             content=r["content"],
             metadata=r["metadata"],
-            distance=r["distance"],
+            distance=max(0.0, r["distance"]),
         )
         for r in raw_results
     ]
