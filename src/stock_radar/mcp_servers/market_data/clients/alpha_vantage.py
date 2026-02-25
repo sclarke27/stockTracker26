@@ -212,8 +212,29 @@ class AlphaVantageClient:
             params={"symbol": ticker, "quarter": str(quarter), "year": str(year)},
         )
 
+        logger.debug(
+            "Transcript response keys: {keys} for {ticker} Q{quarter} {year}",
+            keys=list(data.keys()),
+            ticker=ticker,
+            quarter=quarter,
+            year=year,
+            server=SERVER_NAME,
+        )
+
         segments = self._parse_transcript_segments(data)
         if not segments:
+            logger.warning(
+                "Empty transcript response: {data}",
+                data=(
+                    {k: v if k != "transcript" else f"[{len(v)} segments]" for k, v in data.items()}
+                    if isinstance(data, dict)
+                    else data
+                ),
+                ticker=ticker,
+                quarter=quarter,
+                year=year,
+                server=SERVER_NAME,
+            )
             raise TickerNotFoundError(f"Empty transcript for {ticker} Q{quarter} {year}.")
 
         content = "\n\n".join(f"{seg.speaker} ({seg.title}): {seg.content}" for seg in segments)
