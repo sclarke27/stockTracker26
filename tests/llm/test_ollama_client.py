@@ -12,7 +12,7 @@ from stock_radar.llm.exceptions import LlmConnectionError, LlmError, LlmTimeoutE
 from stock_radar.llm.models import LlmMessage, LlmRequest, LlmResponse
 from stock_radar.llm.ollama_client import OllamaClient
 
-OLLAMA_HOST = "http://localhost:11434"
+OLLAMA_HOST = "http://10.0.0.15:11434"
 OLLAMA_CHAT_URL = f"{OLLAMA_HOST}/api/chat"
 DEFAULT_MODEL = "qwen3:32b"
 

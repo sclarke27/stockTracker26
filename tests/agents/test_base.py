@@ -9,7 +9,6 @@ import pytest
 from mcp.types import TextContent
 
 from stock_radar.agents.base import BaseAgent
-from stock_radar.agents.exceptions import EscalationError
 from stock_radar.agents.models import AgentInput, AgentOutput, AnalysisResult
 from stock_radar.llm.base import LlmClient
 
@@ -175,19 +174,20 @@ class TestBaseAgentRun:
         assert agent.analyze_calls[0] is anthropic
 
     @pytest.mark.asyncio
-    async def test_pre_analysis_escalation_no_cloud_client_raises(self) -> None:
-        """Escalation needed but no cloud client raises EscalationError."""
+    async def test_pre_analysis_escalation_no_cloud_client_uses_ollama(self) -> None:
+        """Escalation needed but no cloud client falls back to Ollama."""
         agent = _StubAgent(escalate=True)
         ollama = AsyncMock(spec=LlmClient)
+        pred_client = _mock_predictions_client()
+        vs_client = _mock_vector_store_client()
 
-        with pytest.raises(EscalationError, match="no cloud LLM client"):
-            await agent.run(
-                _make_input(),
-                ollama,
-                None,
-                _mock_predictions_client(),
-                _mock_vector_store_client(),
-            )
+        output = await agent.run(_make_input(), ollama, None, pred_client, vs_client)
+
+        assert isinstance(output, AgentOutput)
+        assert len(agent.analyze_calls) == 1
+        assert agent.analyze_calls[0] is ollama
+        # Not marked as escalated since it fell back to Ollama
+        assert output.result.escalated is False
 
     @pytest.mark.asyncio
     async def test_post_analysis_escalation_on_low_confidence(self) -> None:

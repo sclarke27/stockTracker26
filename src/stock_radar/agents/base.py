@@ -8,7 +8,6 @@ from abc import ABC, abstractmethod
 from fastmcp import Client
 from loguru import logger
 
-from stock_radar.agents.exceptions import EscalationError
 from stock_radar.agents.models import AgentInput, AgentOutput, AnalysisResult
 from stock_radar.llm.base import LlmClient
 from stock_radar.utils.mcp import get_tool_text
@@ -94,8 +93,9 @@ class BaseAgent(ABC):
 
         Escalation tiers (in order): Ollama → OpenAI → Anthropic.
         If only one cloud provider is configured, it handles all
-        escalation.  If neither is configured, pre-analysis escalation
-        raises ``EscalationError``; post-analysis logs a warning.
+        escalation.  If neither is configured, both pre- and
+        post-analysis escalation gracefully fall back to Ollama
+        with a logged warning.
 
         Args:
             input_data: Structured input for this analysis.
@@ -107,9 +107,6 @@ class BaseAgent(ABC):
 
         Returns:
             Complete agent output with prediction ID and reasoning.
-
-        Raises:
-            EscalationError: If escalation is needed but no cloud client available.
         """
         # Build escalation chain: OpenAI (mid-tier) → Anthropic (top-tier)
         escalation_clients = [c for c in (openai_client, anthropic_client) if c is not None]
@@ -125,19 +122,23 @@ class BaseAgent(ABC):
         # Step 1: Pre-analysis escalation check
         if self.should_escalate(input_data):
             if not escalation_clients:
-                raise EscalationError(
-                    f"Escalation needed for {input_data.ticker} "
-                    f"but no cloud LLM client configured"
+                logger.warning(
+                    "Pre-analysis escalation needed but no cloud LLM client "
+                    "configured; proceeding with Ollama",
+                    agent=self.agent_name,
+                    ticker=input_data.ticker,
                 )
-            # Use the highest available tier for pre-analysis escalation
-            chosen = escalation_clients[-1]
-            logger.info(
-                "Pre-analysis escalation triggered",
-                agent=self.agent_name,
-                ticker=input_data.ticker,
-            )
-            result = await self.analyze(input_data, chosen)
-            result = result.model_copy(update={"escalated": True})
+                result = await self.analyze(input_data, ollama_client)
+            else:
+                # Use the highest available tier for pre-analysis escalation
+                chosen = escalation_clients[-1]
+                logger.info(
+                    "Pre-analysis escalation triggered",
+                    agent=self.agent_name,
+                    ticker=input_data.ticker,
+                )
+                result = await self.analyze(input_data, chosen)
+                result = result.model_copy(update={"escalated": True})
         else:
             # Step 2: Run with local LLM
             result = await self.analyze(input_data, ollama_client)

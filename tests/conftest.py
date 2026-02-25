@@ -14,7 +14,7 @@ def sample_config() -> dict:
             "anthropic": "test-anthropic-key",
         },
         "ollama": {
-            "host": "http://localhost:11434",
+            "host": "http://10.0.0.15:11434",
             "default_model": "qwen3:32b",
             "timeout_seconds": 300,
         },

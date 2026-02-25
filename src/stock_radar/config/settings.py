@@ -16,7 +16,7 @@ class ApiKeys(BaseModel):
 class OllamaSettings(BaseModel):
     """Ollama LLM runtime configuration."""
 
-    host: str = Field(default="http://localhost:11434", description="Ollama server URL")
+    host: str = Field(default="http://10.0.0.15:11434", description="Ollama server URL")
     default_model: str = Field(
         default="qwen3:32b", description="Default model for routine analysis"
     )
@@ -249,4 +249,10 @@ class AppSettings(BaseModel):
     )
     orchestrator: OrchestratorSettings = Field(
         default_factory=OrchestratorSettings, description="Orchestrator cycle settings"
+    )
+    ollama_only: bool = Field(
+        default=True,
+        description="When true, all agents use Ollama exclusively; "
+        "no Claude or OpenAI API calls are made. Set to false to "
+        "re-enable cloud LLM escalation.",
     )

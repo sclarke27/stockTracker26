@@ -42,7 +42,7 @@ class TestOllamaSettings:
 
     def test_defaults(self) -> None:
         settings = OllamaSettings()
-        assert settings.host == "http://localhost:11434"
+        assert settings.host == "http://10.0.0.15:11434"
         assert settings.default_model == "qwen3:32b"
         assert settings.timeout_seconds == 300
 
@@ -142,11 +142,12 @@ class TestAppSettings:
 
     def test_optional_sections_use_defaults(self) -> None:
         settings = AppSettings(**self._minimal_config())
-        assert settings.ollama.host == "http://localhost:11434"
+        assert settings.ollama.host == "http://10.0.0.15:11434"
         assert settings.cache.db_path == "data/stock_radar.db"
         assert settings.predictions.db_path == "data/predictions.db"
         assert settings.agents.earnings_linguist.enabled is True
         assert settings.scoring.lookback_days == 365
+        assert settings.ollama_only is True
 
     def test_missing_api_keys_raises(self) -> None:
         with pytest.raises(ValidationError):
@@ -162,6 +163,12 @@ class TestAppSettings:
         settings = AppSettings(**config)
         assert settings.ollama.default_model == "llama3.2:3b"
         assert settings.ollama.timeout_seconds == 60
+
+    def test_ollama_only_can_be_disabled(self) -> None:
+        config = self._minimal_config()
+        config["ollama_only"] = False
+        settings = AppSettings(**config)
+        assert settings.ollama_only is False
 
 
 class TestNarrativeDivergenceSettings:

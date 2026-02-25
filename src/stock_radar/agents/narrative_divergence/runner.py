@@ -98,14 +98,14 @@ async def run_narrative_divergence(
     ollama_client = create_ollama_client(settings.ollama, model=ollama_model)
 
     anthropic_client = None
-    if settings.api_keys.anthropic:
+    if not settings.ollama_only and settings.api_keys.anthropic:
         anthropic_client = create_anthropic_client(
             api_key=settings.api_keys.anthropic,
             model=nd_settings.anthropic_model,
         )
 
     openai_client = None
-    if settings.api_keys.openai:
+    if not settings.ollama_only and settings.api_keys.openai:
         openai_client = create_openai_client(
             api_key=settings.api_keys.openai,
             model=nd_settings.openai_model,

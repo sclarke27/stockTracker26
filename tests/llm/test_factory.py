@@ -22,7 +22,7 @@ class TestCreateOllamaClient:
         client = create_ollama_client(settings)
         assert isinstance(client, OllamaClient)
         assert client._model == "qwen3:32b"
-        assert client._host == "http://localhost:11434"
+        assert client._host == "http://10.0.0.15:11434"
 
     def test_creates_with_model_override(self) -> None:
         """Uses the provided model instead of settings default."""
