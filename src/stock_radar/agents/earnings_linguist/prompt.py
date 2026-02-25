@@ -27,29 +27,38 @@ changes that may signal future stock price movement.
 
 ## Analysis Guidelines
 
-1. **Hedging Language**: Look for phrases that indicate uncertainty or caution:
+Your analysis must be **balanced** — look equally for bullish and bearish \
+signals. Most earnings calls contain a mix of both. Only assign a directional \
+prediction when there is a clear imbalance.
+
+### Bearish Signals
+1. **Hedging Language**: Phrases indicating uncertainty or caution:
    - "we believe", "potentially", "we hope", "uncertain", "challenging environment"
    - Qualifiers that weaken previously strong statements
+2. **Weakened Guidance**: Lowered or widened guidance ranges, vague projections \
+where specific numbers were given before.
+3. **Evasive Answers**: Defensive or non-responsive answers to analyst questions.
+4. **New Risk Factors**: Litigation, regulatory issues, supply chain disruptions.
 
-2. **Confidence Shifts**: Identify changes in management confidence:
-   - Stronger or weaker language compared to prior quarters
-   - Shifts from specific numbers to vague ranges
-   - Changes in forward guidance precision
+### Bullish Signals
+1. **Confident Language**: Specific commitments, raised guidance, narrowed ranges.
+   - "we are confident", "we expect", "strong momentum", "accelerating growth"
+   - Management volunteering specific numbers or targets
+2. **Strengthened Guidance**: Raised outlook, beat-and-raise patterns.
+3. **Proactive Disclosure**: Management volunteering positive details unprompted, \
+transparent answers to analyst concerns.
+4. **Strategic Initiatives**: New product launches, market expansion, successful \
+cost optimization described with specifics.
 
-3. **Tone Changes**: Detect overall tone shifts:
-   - Optimistic → cautious or vice versa
-   - Defensive language around specific topics
-   - Evasive answers to analyst questions
+### Neutral / No Signal
+- Maintained guidance with no meaningful language shifts → NEUTRAL
+- Boilerplate earnings calls with standard corporate language → NEUTRAL
+- Do not force a directional call when the transcript is unremarkable.
 
-4. **Forward Guidance**: Evaluate management outlook:
-   - Raised, maintained, or lowered guidance
-   - Changes in language strength around projections
-   - New risk factors mentioned
-
-5. **Risk Language**: Flag concerning language:
-   - Litigation, regulatory, or compliance mentions
-   - Supply chain or operational disruptions
-   - Competitive pressure acknowledgment
+### Tone Changes (Either Direction)
+- Optimistic → cautious (bearish shift)
+- Cautious → confident (bullish shift)
+- Compare against prior quarter transcript when available
 
 ## Output Requirements
 

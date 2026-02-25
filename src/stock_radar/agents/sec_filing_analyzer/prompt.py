@@ -27,40 +27,59 @@ future stock price movement.
 
 ## Analysis Framework
 
-### SEC Filing Patterns to Detect
+### Important: Routine Activity Is Not a Signal
+
+Most SEC filings and insider transactions are **routine**. Do not treat normal \
+activity as a signal. Only flag patterns that are genuinely unusual in context.
+
+- Executives regularly sell shares for taxes, diversification, and liquidity. \
+**Routine selling is NOT bearish.** Only flag selling that is unusual in timing, \
+size, or clustering relative to the company's historical pattern.
+- Most 8-K filings report ordinary events (board changes, compensation plans). \
+Only unusual frequency or content warrants attention.
+- A single insider selling is almost never a signal on its own.
+
+### Bullish Patterns
 
 1. **Insider Buying Cluster**: Multiple insiders purchasing shares in a short \
-window signals management confidence in near-term performance.
+window — strong bullish signal. Insiders risk their own money, so voluntary \
+buying reflects genuine confidence.
 
-2. **Insider Selling Cluster**: Multiple insiders selling, especially at high \
-volume, often precedes price declines — though consider planned selling programs.
+2. **Large Open-Market Purchase by CEO/CFO**: Especially meaningful when the \
+executive buys >1% of their holdings voluntarily (not options exercise).
 
-3. **Unusual 8-K Frequency**: More 8-K filings than typical suggests material \
-events. Rapid succession can indicate operational volatility.
+3. **Clean Filing Cadence**: On-time 10-K/10-Q with no amendments or NT filings \
+indicates well-functioning internal controls — supportive of stability.
 
-4. **S-1 Amendment**: Multiple amendments to an S-1 registration can signal \
-deal complexity or regulatory friction. Late-stage changes are often bearish.
+### Bearish Patterns
 
-5. **Late Filing**: 10-K or 10-Q filed past deadline suggests internal control \
-issues, auditor disagreements, or financial restatements — strong bearish signal.
+1. **Unusual Insider Selling Cluster**: Multiple C-suite insiders selling in a \
+short window **outside** of pre-planned 10b5-1 programs and at unusual volumes \
+relative to their history. One-off sales are typically routine.
 
-6. **Executive Departure**: Sudden departure of C-suite executives filed via \
-8-K is often negative, especially if accompanied by no explanation.
+2. **Late Filing (NT 10-K/10-Q)**: Filing past deadline suggests internal \
+control issues or auditor disagreements.
 
-### Insider Transaction Analysis
+3. **Executive Departure + Red Flags**: C-suite departure combined with other \
+signals (late filings, restatements) — not departure alone.
 
-- **Net buying** (positive net_shares_acquired): Bullish if voluntary, \
-especially for C-suite with deep knowledge of operations.
-- **Net selling**: Evaluate magnitude and insider role. CEO or CFO sales of \
->1% of holdings are meaningful bearish signals.
-- **Planned sales** (10b5-1 programs): Less informative — insiders pre-schedule \
-these. Note if you can infer this from context.
+### Context Matters
+
+- **Planned sales** (10b5-1 programs): Insiders pre-schedule these — they are \
+NOT informative about near-term outlook.
+- **Options exercises + immediate sale**: Routine tax optimization, not bearish.
+- **Single insider selling**: Almost always routine. Require a cluster or \
+unusual pattern to flag.
 
 ### Signal Strength
 
-- Multiple aligned signals (e.g., CEO selling + late filing) → HIGH confidence
+- Multiple aligned signals (e.g., buying cluster + raised guidance) → HIGH \
+confidence bullish
+- Multiple aligned signals (e.g., selling cluster + late filing + departure) → \
+HIGH confidence bearish
 - Single clear signal → MEDIUM confidence
-- Mixed signals or routine filings → LOW confidence or NEUTRAL direction
+- Routine filings and normal transactions → NEUTRAL direction, LOW confidence
+- When in doubt, default to NEUTRAL — false signals are worse than missed ones
 
 ## Output Requirements
 
@@ -72,11 +91,12 @@ Respond with valid JSON matching this exact schema:
 
 ## Confidence Scoring
 
-- **0.8-1.0**: Multiple aligned, unambiguous signals (e.g., cluster selling + late 10-K)
+- **0.8-1.0**: Multiple aligned, unambiguous signals (e.g., buying cluster + \
+strong fundamentals, or selling cluster + late filing + departure)
 - **0.6-0.8**: Single strong signal with corroborating evidence
 - **0.4-0.6**: Moderate signals requiring interpretation
-- **0.2-0.4**: Weak or routine filing activity
-- **0.0-0.2**: No meaningful patterns — normal filing cadence"""
+- **0.2-0.4**: Weak or routine filing activity — likely NEUTRAL
+- **0.0-0.2**: No meaningful patterns — normal filing cadence, output NEUTRAL"""
 
 
 def build_user_prompt(

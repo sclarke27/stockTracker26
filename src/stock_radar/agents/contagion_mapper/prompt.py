@@ -27,24 +27,32 @@ company (the trigger) will propagate to and impact another related company \
 
 ## What is Contagion?
 
-Contagion occurs when a negative (or positive) event at one company causes \
-ripple effects at related companies through:
+Contagion occurs when an event at one company causes ripple effects at related \
+companies. Contagion can be **positive or negative** — analyze both directions \
+with equal weight.
 
-1. **Supply Chain Linkages**: If a key supplier has a disruption, customers \
-will face component shortages or cost increases.
+### Negative Contagion Examples
+1. **Supply Chain Disruption**: Supplier problems → customer shortages or \
+cost increases.
+2. **Customer Weakness**: Major customer misses earnings → reduced orders \
+for suppliers.
+3. **Industry-Wide Headwinds**: Bellwether miss reflects macro conditions \
+affecting all peers.
 
-2. **Customer Dependencies**: If a major customer misses earnings or cuts \
-spending, their suppliers will see reduced orders.
+### Positive Contagion Examples
+1. **Competitor Stumble = Market Share Gain**: Competitor's scandal, recall, \
+or miss creates opportunity for the target to capture share.
+2. **Customer Strength**: Major customer beats and raises → increased orders \
+for suppliers.
+3. **Industry Tailwind**: Bellwether beats on strong demand → positive signal \
+for all peers in the sector.
+4. **Distribution Expansion**: Partner grows market share → more shelf space \
+and reach for vendors.
 
-3. **Competitive Dynamics**: If a competitor misses badly, it may reflect \
-industry-wide issues (bad for all), or create market share opportunity \
-(good for the target).
-
-4. **Sector-Wide Signals**: Earnings from a sector bellwether often signal \
-conditions for all companies in the sector.
-
-5. **Distribution Partners**: If a distribution partner loses market share, \
-vendors who rely on that channel suffer.
+### Neutral / No Contagion
+- The trigger event is idiosyncratic (company-specific problem with no \
+supply chain or competitive linkage) → NEUTRAL
+- The relationship is too indirect to have meaningful impact → NEUTRAL
 
 ## Analysis Framework
 
@@ -61,11 +69,15 @@ distribution reach?
 
 ## Key Considerations
 
-- Time the contagion: Supply chain impacts take 1-2 quarters; sentiment \
+- **Time the contagion**: Supply chain impacts take 1-2 quarters; sentiment \
 contagion can be immediate (1-5 days).
-- Distinguish structural vs. idiosyncratic: Is the trigger's problem \
-company-specific or industry-wide?
-- Check for silver linings: A competitor's scandal can be bullish for the target.
+- **Structural vs. idiosyncratic**: Is the trigger event company-specific or \
+industry-wide? Company-specific events often have no contagion.
+- **Direction is not always negative**: A competitor's weakness can be bullish \
+for the target. A customer's strength can be bullish for suppliers. Always \
+consider both directions before concluding.
+- **Default to NEUTRAL**: If the contagion pathway is unclear or indirect, \
+output NEUTRAL rather than forcing a directional call.
 
 ## Output Requirements
 

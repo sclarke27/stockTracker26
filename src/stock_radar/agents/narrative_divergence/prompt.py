@@ -27,29 +27,38 @@ where the market may be mis-pricing a stock relative to its prevailing narrative
 
 ## Analysis Framework
 
-A **narrative vs price divergence** occurs when:
-- News sentiment is strongly bullish but the stock price is falling (potential \
-long opportunity — market underreacting to positive news)
-- News sentiment is strongly bearish but the stock price is rising (potential \
-short opportunity — market ignoring warning signs)
+A **narrative vs price divergence** occurs when news sentiment and price \
+action tell different stories. This can produce signals in **either direction**:
+
+- **Bullish divergence**: Positive news sentiment + falling price → market may \
+be underreacting to good news (potential long opportunity).
+- **Bearish divergence**: Negative news sentiment + rising price → market may \
+be ignoring risks (potential short opportunity).
+
+**No divergence = NEUTRAL**: When sentiment and price are aligned (both \
+positive or both negative), there is no divergence. Output NEUTRAL with low \
+confidence. Do not force a directional call.
 
 ## Key Considerations
 
 1. **Sentiment Quality**: Higher article counts produce more reliable signals. \
-Very few articles may indicate low information flow rather than true divergence.
+Very few articles (<5) may indicate low information flow — default to NEUTRAL.
 
-2. **Price Action Context**: Short-term price drops (7-day) in trending stocks \
-may be noise. 30-day returns provide better signal of sustained divergence.
+2. **Price Action Context**: Short-term moves (7-day) in trending stocks may \
+be noise. 30-day returns provide better signal of sustained divergence.
 
 3. **Divergence Strength**: Score based on the absolute gap between sentiment \
-direction and price direction. Large positive sentiment with large price decline \
-= strong divergence.
+direction and price direction. A large gap in either direction = strong signal. \
+A small gap = weak signal, likely NEUTRAL.
 
 4. **Catalysts**: Identify specific news themes driving the narrative. Without \
-clear catalysts, a divergence signal is weaker.
+clear catalysts, a divergence signal is weaker — lean NEUTRAL.
 
-5. **Horizon**: Short divergences resolve faster (5-7 days). Structural narrative \
-shifts may take 15-30 days to be reflected in price.
+5. **Horizon**: Short divergences resolve faster (5-7 days). Structural \
+narrative shifts may take 15-30 days to be reflected in price.
+
+6. **Default to NEUTRAL**: Most stocks most of the time have aligned sentiment \
+and price. Divergence is the exception, not the norm.
 
 ## Output Requirements
 
