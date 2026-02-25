@@ -55,8 +55,8 @@ The dashboard API is a persistent service (runs via systemd). It provides read-o
 
 The system tracks stocks in two tiers:
 
-- **Deep** (10 tickers): AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA, JPM, V, JNJ — all 4 agents run against these
-- **Light** (10 tickers): AMD, BA, DIS, NFLX, CRM, INTC, PFE, XOM, WMT, KO — only narrative divergence and SEC filing analysis
+- **Deep** (10 tickers): AAPL, MSFT, GOOGL, AMZN, NVDA, META, JPM, V, NOW, NFLX — all 4 agents run against these
+- **Light** (11 tickers): AMD, BA, DIS, CRM, INTC, PFE, XOM, WMT, KO, DASH, WBD — only narrative divergence and SEC filing analysis
 
 The watchlist is configured in `config/watchlist.yaml`.
 
@@ -74,7 +74,7 @@ The watchlist is configured in `config/watchlist.yaml`.
 - Main config: `config/default.yaml`
 - Watchlist: `config/watchlist.yaml`
 - Contagion pairs: `config/contagion_pairs.yaml`
-- Environment variables: `.env` (API keys for Alpha Vantage, Anthropic, SEC EDGAR)
+- Environment variables: `.env` (API keys for Alpha Vantage, SEC EDGAR)
 
 ## Data Storage
 
@@ -83,6 +83,10 @@ The watchlist is configured in `config/watchlist.yaml`.
 | `data/stock_radar.db` | SQLite cache for market data and SEC filings |
 | `data/predictions.db` | Prediction tracking and scoring results |
 | `data/chroma_data/` | ChromaDB vector embeddings |
+
+## LLM Configuration
+
+All inference runs on Ollama (`qwen3:32b`) on the desktop (10.0.0.15). Cloud LLM escalation (Claude/OpenAI) is disabled by default (`ollama_only: true` in config). To re-enable cloud escalation, set `ollama_only: false` in `config/default.yaml`.
 
 ## When Reporting Results
 
@@ -97,5 +101,5 @@ When running the orchestrator or individual agents, always report:
 - If ingestion fails, agents can still run on cached (stale) data
 - If an individual agent fails, the others continue running
 - Check `logs/` directory for detailed log files
-- The Ollama server must be running on the desktop (RTX 4090) for local LLM inference
-- Verify Ollama connectivity: `curl http://<desktop-ip>:11434/api/tags`
+- The Ollama server must be running on the desktop (RTX 4090) at `http://10.0.0.15:11434`
+- Verify Ollama connectivity: `curl http://10.0.0.15:11434/api/tags`

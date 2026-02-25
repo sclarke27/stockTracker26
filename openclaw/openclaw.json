@@ -7,7 +7,7 @@
     "defaults": {
       "workspace": "/home/pi/stock-radar",
       "model": {
-        "primary": "anthropic/claude-sonnet-4-20250514"
+        "primary": "ollama-desktop/qwen3:32b"
       },
       "timeoutSeconds": 600,
       "heartbeat": {
@@ -52,28 +52,19 @@
     "sessionRetention": "24h"
   },
 
-  // Model providers — connect to Ollama on the desktop for local inference.
-  // Update the IP to match your desktop's address on the local network.
+  // Model providers — connect to Ollama on the desktop (RTX 4090) for inference.
   "models": {
     "providers": {
       "ollama-desktop": {
-        "baseUrl": "http://192.168.1.100:11434/v1",
+        "baseUrl": "http://10.0.0.15:11434/v1",
         "api": "openai-completions",
         "models": [
           {
-            "id": "llama3.1:8b",
-            "name": "Llama 3.1 8B",
-            "reasoning": false,
+            "id": "qwen3:32b",
+            "name": "Qwen3 32B",
+            "reasoning": true,
             "input": ["text"],
-            "contextWindow": 128000,
-            "cost": { "input": 0, "output": 0 }
-          },
-          {
-            "id": "llama3.1:70b",
-            "name": "Llama 3.1 70B",
-            "reasoning": false,
-            "input": ["text"],
-            "contextWindow": 128000,
+            "contextWindow": 32768,
             "cost": { "input": 0, "output": 0 }
           }
         ]
