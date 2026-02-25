@@ -223,7 +223,7 @@ async def run_batch(
             )
             results.append(output)
         except Exception:
-            logger.error(
+            logger.opt(exception=True).error(
                 "Narrative Divergence agent failed for ticker",
                 ticker=ticker,
                 quarter=quarter,

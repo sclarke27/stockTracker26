@@ -20,6 +20,7 @@ from stock_radar.models.market_data import (
     QuoteResponse,
     TickerMatch,
     TickerSearchResponse,
+    TranscriptSegment,
 )
 from stock_radar.utils.rate_limiter import RateLimiter
 
@@ -190,6 +191,11 @@ class AlphaVantageClient:
     ) -> EarningsTranscriptResponse:
         """Fetch an earnings call transcript for a specific quarter.
 
+        The Alpha Vantage API returns a ``transcript`` array of speaker
+        segments, each with ``speaker``, ``title``, ``content``, and
+        ``sentiment`` fields.  We concatenate these into a single text
+        string and also preserve the structured segments.
+
         Args:
             ticker: Stock ticker symbol (e.g. ``"AAPL"``).
             quarter: Fiscal quarter (1-4).
@@ -206,17 +212,53 @@ class AlphaVantageClient:
             params={"symbol": ticker, "quarter": str(quarter), "year": str(year)},
         )
 
-        content = data.get("content", "")
-        if not content:
+        segments = self._parse_transcript_segments(data)
+        if not segments:
             raise TickerNotFoundError(f"Empty transcript for {ticker} Q{quarter} {year}.")
+
+        content = "\n\n".join(f"{seg.speaker} ({seg.title}): {seg.content}" for seg in segments)
 
         return EarningsTranscriptResponse(
             ticker=data.get("symbol", ticker),
-            quarter=data.get("quarter", quarter),
-            year=data.get("year", year),
-            date=data.get("date", ""),
+            quarter=int(data.get("quarter", quarter)),
+            year=year,
             content=content,
+            segments=segments,
         )
+
+    @staticmethod
+    def _parse_transcript_segments(data: dict) -> list[TranscriptSegment]:
+        """Parse transcript segments from an AV API response.
+
+        Handles both the array-of-segments format (``transcript`` key)
+        and a legacy flat-string format (``content`` key) for
+        backwards compatibility.
+        """
+        raw_segments = data.get("transcript", [])
+        if raw_segments:
+            return [
+                TranscriptSegment(
+                    speaker=seg.get("speaker", ""),
+                    title=seg.get("title", ""),
+                    content=seg.get("content", ""),
+                    sentiment=seg.get("sentiment", ""),
+                )
+                for seg in raw_segments
+                if seg.get("content")
+            ]
+
+        # Fall back to flat content string (legacy / alternative format).
+        flat_content = data.get("content", "")
+        if flat_content:
+            return [
+                TranscriptSegment(
+                    speaker="Unknown",
+                    title="",
+                    content=flat_content,
+                )
+            ]
+
+        return []
 
     async def get_ipo_calendar(self) -> IPOCalendarResponse:
         """Fetch the upcoming IPO calendar.

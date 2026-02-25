@@ -234,7 +234,7 @@ async def run_batch(
             )
             results.append(output)
         except Exception:
-            logger.error(
+            logger.opt(exception=True).error(
                 "Contagion Mapper failed for pair",
                 trigger=trigger,
                 target=target,

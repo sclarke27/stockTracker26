@@ -236,20 +236,20 @@ class TestEarningsTranscriptResponse:
             ticker="AAPL",
             quarter=4,
             year=2024,
-            date="2024-10-31",
             content="Good afternoon, everyone. Welcome to Apple's...",
         )
         assert transcript.ticker == "AAPL"
         assert transcript.quarter == 4
         assert transcript.year == 2024
         assert "Welcome to Apple" in transcript.content
+        assert transcript.segments == []
 
     def test_missing_required_field(self) -> None:
         with pytest.raises(ValidationError):
             EarningsTranscriptResponse(
                 ticker="AAPL",
                 quarter=4,
-                # missing year, date, content
+                # missing year, content
             )
 
     def test_serialization_roundtrip(self) -> None:
@@ -257,7 +257,6 @@ class TestEarningsTranscriptResponse:
             ticker="AAPL",
             quarter=4,
             year=2024,
-            date="2024-10-31",
             content="Transcript text here.",
         )
         json_str = transcript.model_dump_json()

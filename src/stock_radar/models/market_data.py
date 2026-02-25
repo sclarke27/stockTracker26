@@ -73,14 +73,26 @@ class TickerSearchResponse(BaseModel):
     matches: list[TickerMatch] = Field(description="Matching tickers")
 
 
+class TranscriptSegment(BaseModel):
+    """Single speaker segment from an earnings call transcript."""
+
+    speaker: str = Field(description="Speaker name")
+    title: str = Field(description="Speaker title/role")
+    content: str = Field(description="Spoken content")
+    sentiment: str = Field(default="", description="Sentiment label for this segment")
+
+
 class EarningsTranscriptResponse(BaseModel):
     """Earnings call transcript for a specific quarter."""
 
     ticker: str = Field(description="Stock ticker symbol")
     quarter: int = Field(description="Fiscal quarter (1-4)")
     year: int = Field(description="Fiscal year")
-    date: str = Field(description="Earnings call date")
-    content: str = Field(description="Full transcript text")
+    content: str = Field(description="Full transcript text (concatenated from segments)")
+    segments: list[TranscriptSegment] = Field(
+        default_factory=list,
+        description="Individual speaker segments with sentiment",
+    )
 
 
 class IPOEntry(BaseModel):
