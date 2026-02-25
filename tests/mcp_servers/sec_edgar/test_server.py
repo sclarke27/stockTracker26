@@ -23,7 +23,6 @@ from tests.mcp_servers.sec_edgar.test_edgar_client import (
 MOCK_ENV = {
     "SEC_EDGAR_EMAIL": "test@example.com",
     "ALPHA_VANTAGE_API_KEY": "unused",
-    "FINNHUB_API_KEY": "unused",
     "ANTHROPIC_API_KEY": "unused",
     "OPENAI_API_KEY": "unused",
 }

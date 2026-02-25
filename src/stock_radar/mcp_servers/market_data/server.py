@@ -11,12 +11,12 @@ from fastmcp import Context, FastMCP
 from loguru import logger
 
 from stock_radar.mcp_servers.market_data.clients.alpha_vantage import AlphaVantageClient
-from stock_radar.mcp_servers.market_data.clients.finnhub import FinnhubClient
 from stock_radar.mcp_servers.market_data.config import (
     AV_RATE_LIMIT_PER_DAY,
     AV_RATE_LIMIT_PER_MINUTE,
     AV_RATE_LIMIT_PER_SECOND,
     CACHE_TTL_COMPANY_INFO,
+    CACHE_TTL_IPO_CALENDAR,
     CACHE_TTL_PRICE_HISTORY,
     CACHE_TTL_QUOTE,
     CACHE_TTL_TICKER_SEARCH,
@@ -33,7 +33,6 @@ class ServerDeps:
     """Shared dependencies initialized during server lifespan."""
 
     av_client: AlphaVantageClient
-    fh_client: FinnhubClient
     cache: Cache
     http_client: httpx.AsyncClient
 
@@ -49,15 +48,15 @@ def _get_db_path() -> str:
     return settings.cache.db_path
 
 
-def _get_api_keys() -> tuple[str, str]:
-    """Return (alpha_vantage_key, finnhub_key) from config.
+def _get_api_key() -> str:
+    """Return the Alpha Vantage API key from config.
 
     Extracted as a function so tests can patch environment variables.
     """
     from stock_radar.config.loader import load_settings
 
     settings = load_settings()
-    return settings.api_keys.alpha_vantage, settings.api_keys.finnhub
+    return settings.api_keys.alpha_vantage
 
 
 @asynccontextmanager
@@ -70,7 +69,7 @@ async def lifespan(server: FastMCP) -> AsyncIterator[ServerDeps]:
     setup_logging()
 
     db_path = _get_db_path()
-    av_key, fh_key = _get_api_keys()
+    av_key = _get_api_key()
 
     http_client = httpx.AsyncClient(timeout=30.0)
     rate_limiter = RateLimiter(
@@ -86,13 +85,11 @@ async def lifespan(server: FastMCP) -> AsyncIterator[ServerDeps]:
         http_client=http_client,
         rate_limiter=rate_limiter,
     )
-    fh_client = FinnhubClient(api_key=fh_key, http_client=http_client)
 
     logger.info("Market data MCP server started", server=SERVER_NAME)
 
     deps = ServerDeps(
         av_client=av_client,
-        fh_client=fh_client,
         cache=cache,
         http_client=http_client,
     )
@@ -221,9 +218,29 @@ async def get_earnings_transcript(
         logger.info("Cache hit: transcript", ticker=ticker, server=SERVER_NAME)
         return cached
 
-    result = await deps.fh_client.get_earnings_transcript(ticker, quarter, year)
+    result = await deps.av_client.get_earnings_transcript(ticker, quarter, year)
     serialized = result.model_dump_json()
     await deps.cache.set(cache_key, serialized, ttl=CACHE_TTL_TRANSCRIPT)
+    return serialized
+
+
+async def get_ipo_calendar(ctx: Context) -> str:
+    """Get upcoming IPO listings.
+
+    Returns a list of upcoming IPOs with expected dates, price ranges,
+    and exchange information.
+    """
+    deps = _deps(ctx)
+    cache_key = Cache.make_key("ipo_calendar")
+
+    cached = await deps.cache.get(cache_key)
+    if cached:
+        logger.info("Cache hit: ipo_calendar", server=SERVER_NAME)
+        return cached
+
+    result = await deps.av_client.get_ipo_calendar()
+    serialized = result.model_dump_json()
+    await deps.cache.set(cache_key, serialized, ttl=CACHE_TTL_IPO_CALENDAR)
     return serialized
 
 
@@ -234,6 +251,7 @@ TOOLS = [
     get_company_info,
     search_tickers,
     get_earnings_transcript,
+    get_ipo_calendar,
 ]
 
 

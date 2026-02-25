@@ -81,3 +81,21 @@ class EarningsTranscriptResponse(BaseModel):
     year: int = Field(description="Fiscal year")
     date: str = Field(description="Earnings call date")
     content: str = Field(description="Full transcript text")
+
+
+class IPOEntry(BaseModel):
+    """Single upcoming IPO listing."""
+
+    symbol: str = Field(description="Ticker symbol")
+    name: str = Field(description="Company name")
+    ipo_date: str = Field(description="Expected IPO date (YYYY-MM-DD)")
+    price_range_low: float = Field(description="Low end of expected price range")
+    price_range_high: float = Field(description="High end of expected price range")
+    currency: str = Field(description="Trading currency (e.g. USD)")
+    exchange: str = Field(description="Listing exchange (e.g. NASDAQ, NYSE)")
+
+
+class IPOCalendarResponse(BaseModel):
+    """Upcoming IPO calendar."""
+
+    entries: list[IPOEntry] = Field(description="Upcoming IPO listings")

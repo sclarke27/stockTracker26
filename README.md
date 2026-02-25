@@ -13,7 +13,7 @@ Two machines on the same local network:
 - **Desktop (RTX 4090)** -- runs Ollama for local LLM inference.
 - **Raspberry Pi 5** -- runs OpenClaw, the orchestrator, dashboard API, and dashboard UI.
 
-Only outbound connections are API calls to Alpha Vantage, Finnhub, SEC EDGAR,
+Only outbound connections are API calls to Alpha Vantage, SEC EDGAR,
 and Anthropic.
 
 ---
@@ -57,8 +57,7 @@ Required variables:
 
 | Variable              | Description                                    | Where to get it                                  |
 |-----------------------|------------------------------------------------|--------------------------------------------------|
-| ALPHA_VANTAGE_API_KEY | Market data, prices, fundamentals, news        | https://www.alphavantage.co/support/#api-key     |
-| FINNHUB_API_KEY       | Earnings call transcripts                      | https://finnhub.io/register                      |
+| ALPHA_VANTAGE_API_KEY | Market data, prices, fundamentals, transcripts | https://www.alphavantage.co/support/#api-key     |
 | SEC_EDGAR_EMAIL       | Contact email for SEC EDGAR User-Agent header  | Use your own email                               |
 
 At least one of these cloud LLM keys is needed for escalation:
@@ -350,7 +349,7 @@ External APIs --> MCP Servers --> Agents (Ollama / Claude API)
 Each data source is wrapped in an MCP server with a standardized tool
 interface:
 
-1. market-data-mcp -- Alpha Vantage prices/quotes + Finnhub transcripts
+1. market-data-mcp -- Alpha Vantage prices/quotes/transcripts/IPOs
 2. sec-edgar-mcp -- SEC EDGAR filings and insider transactions
 3. predictions-db-mcp -- prediction logging and scoring
 4. vector-store-mcp -- ChromaDB semantic search

@@ -74,7 +74,7 @@ The watchlist is configured in `config/watchlist.yaml`.
 - Main config: `config/default.yaml`
 - Watchlist: `config/watchlist.yaml`
 - Contagion pairs: `config/contagion_pairs.yaml`
-- Environment variables: `.env` (API keys for Alpha Vantage, Finnhub, Anthropic, SEC EDGAR)
+- Environment variables: `.env` (API keys for Alpha Vantage, Anthropic, SEC EDGAR)
 
 ## Data Storage
 

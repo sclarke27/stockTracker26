@@ -11,7 +11,6 @@ def sample_config() -> dict:
     return {
         "api_keys": {
             "alpha_vantage": "test-av-key",
-            "finnhub": "test-fh-key",
             "anthropic": "test-anthropic-key",
         },
         "ollama": {

@@ -8,17 +8,15 @@ CACHE_TTL_PRICE_HISTORY = 86_400  # 24 hours
 CACHE_TTL_COMPANY_INFO = 604_800  # 7 days
 CACHE_TTL_TRANSCRIPT: int | None = None  # Never expires
 CACHE_TTL_TICKER_SEARCH = 86_400  # 24 hours
+CACHE_TTL_IPO_CALENDAR = 86_400  # 24 hours
 
-# Alpha Vantage rate limits
+# Alpha Vantage rate limits (Premium tier: 75 req/min)
 AV_RATE_LIMIT_PER_SECOND = 1
-AV_RATE_LIMIT_PER_MINUTE = 5
-AV_RATE_LIMIT_PER_DAY = 500
+AV_RATE_LIMIT_PER_MINUTE = 75
+AV_RATE_LIMIT_PER_DAY: int | None = None  # Unlimited on Premium
 
 # Alpha Vantage base URL
 AV_BASE_URL = "https://www.alphavantage.co/query"
-
-# Finnhub base URL
-FINNHUB_BASE_URL = "https://finnhub.io/api/v1"
 
 # Server identity for logging
 SERVER_NAME = "market-data-mcp"

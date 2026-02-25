@@ -14,9 +14,8 @@ An AI-powered stock market analysis system. It reads unstructured data — earni
 
 ### Data Ingestion
 The system pulls data from external sources and caches it locally:
-- **Alpha Vantage** — market data, prices, fundamentals, technical indicators, news sentiment.
+- **Alpha Vantage** (Premium) — market data, prices, fundamentals, earnings call transcripts, IPO calendar, news sentiment.
 - **SEC EDGAR** — filings (8-K, 10-K, 10-Q), insider transactions, filing pattern analysis. Free API, no key needed, 10 req/sec limit.
-- **Finnhub** (free or $50/mo) — earnings call transcripts.
 
 All fetched data gets cached in a local SQLite database to avoid redundant API calls.
 
@@ -65,7 +64,7 @@ External APIs ──► MCP Servers ──► Agents (Ollama / Claude API)
 
 ### MCP Servers to Build (in order)
 
-1. **market-data-mcp** — Wraps Alpha Vantage (prices, fundamentals, technicals) and Finnhub (earnings transcripts). Tools: `get_price_history`, `get_quote`, `get_company_info`, `search_tickers`, `get_earnings_transcript`. Caches in local SQLite.
+1. **market-data-mcp** — Wraps Alpha Vantage (prices, fundamentals, transcripts, IPOs). Tools: `get_price_history`, `get_quote`, `get_company_info`, `search_tickers`, `get_earnings_transcript`, `get_ipo_calendar`. Caches in local SQLite.
 2. **sec-edgar-mcp** — Wraps SEC EDGAR API. Tools: `get_filings`, `get_filing_text`, `get_insider_transactions`, `search_filings`. Downloads and caches full filing text.
 3. **predictions-db-mcp** — Wraps the prediction tracking database. Tools: `log_prediction`, `score_prediction`, `get_prediction_history`, `get_agent_accuracy`.
 4. **vector-store-mcp** — Wraps ChromaDB. Tools: `store_embedding`, `search_similar`, `get_document`. Stores transcripts, filings, prediction reasoning.

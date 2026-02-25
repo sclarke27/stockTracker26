@@ -16,7 +16,7 @@ Stock Radar — an AI-powered stock market analysis system that uses LLMs to ide
 
 **Backend (Python):** Python 3.11+ with venv | FastMCP (MCP servers) | Ollama + Claude API (LLMs) | Pydantic (data models) | httpx (async HTTP) | SQLite (storage) | ChromaDB (vector store) | loguru (logging) | pyyaml (config) | pytest + pytest-asyncio (testing) | black (formatting) | ruff (linting)
 
-**Data sources:** Alpha Vantage (prices, fundamentals, technicals, news sentiment) | Finnhub (earnings transcripts) | SEC EDGAR (filings, insider transactions)
+**Data sources:** Alpha Vantage (prices, fundamentals, transcripts, IPOs, news sentiment) | SEC EDGAR (filings, insider transactions)
 
 **Frontend (JavaScript/TypeScript):** Lit (web components) | Sass (styling) | Vite (build) | TypeScript | PWA — dashboard connects to `dashboard-mcp` over HTTP. Tabs for indentation.
 

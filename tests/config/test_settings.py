@@ -24,17 +24,16 @@ class TestApiKeys:
     """Tests for ApiKeys model."""
 
     def test_valid_construction(self) -> None:
-        keys = ApiKeys(alpha_vantage="av-key", finnhub="fh-key")
+        keys = ApiKeys(alpha_vantage="av-key")
         assert keys.alpha_vantage == "av-key"
-        assert keys.finnhub == "fh-key"
         assert keys.anthropic == ""  # default
 
     def test_missing_required_field_raises(self) -> None:
         with pytest.raises(ValidationError):
-            ApiKeys(finnhub="fh-key")  # type: ignore[call-arg]
+            ApiKeys()  # type: ignore[call-arg]
 
     def test_anthropic_default_is_empty_string(self) -> None:
-        keys = ApiKeys(alpha_vantage="av", finnhub="fh")
+        keys = ApiKeys(alpha_vantage="av")
         assert keys.anthropic == ""
 
 
@@ -132,7 +131,7 @@ class TestAppSettings:
 
     def _minimal_config(self) -> dict:
         return {
-            "api_keys": {"alpha_vantage": "av", "finnhub": "fh"},
+            "api_keys": {"alpha_vantage": "av"},
             "sec_edgar": {"user_agent_email": "test@example.com"},
         }
 
@@ -155,7 +154,7 @@ class TestAppSettings:
 
     def test_missing_sec_edgar_raises(self) -> None:
         with pytest.raises(ValidationError):
-            AppSettings(api_keys={"alpha_vantage": "av", "finnhub": "fh"})  # type: ignore[call-arg]
+            AppSettings(api_keys={"alpha_vantage": "av"})  # type: ignore[call-arg]
 
     def test_nested_override(self) -> None:
         config = self._minimal_config()
@@ -256,21 +255,21 @@ class TestAgentsSettings:
 
     def test_narrative_divergence_accessible_from_app_settings(self) -> None:
         app = AppSettings(
-            api_keys={"alpha_vantage": "av", "finnhub": "fh"},
+            api_keys={"alpha_vantage": "av"},
             sec_edgar={"user_agent_email": "test@example.com"},
         )
         assert app.agents.narrative_divergence.enabled is True
 
     def test_sec_filing_analyzer_accessible_from_app_settings(self) -> None:
         app = AppSettings(
-            api_keys={"alpha_vantage": "av", "finnhub": "fh"},
+            api_keys={"alpha_vantage": "av"},
             sec_edgar={"user_agent_email": "test@example.com"},
         )
         assert app.agents.sec_filing_analyzer.escalation_filing_count == 30
 
     def test_contagion_mapper_accessible_from_app_settings(self) -> None:
         app = AppSettings(
-            api_keys={"alpha_vantage": "av", "finnhub": "fh"},
+            api_keys={"alpha_vantage": "av"},
             sec_edgar={"user_agent_email": "test@example.com"},
         )
         assert app.agents.contagion_mapper.default_horizon_days == 5

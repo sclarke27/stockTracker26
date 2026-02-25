@@ -256,7 +256,9 @@ class EdgarClient:
                 xml_doc = basename
             else:
                 xml_doc = await self._find_xml_document(
-                    stripped_cik, accession_no_dashes, accession_number,
+                    stripped_cik,
+                    accession_no_dashes,
+                    accession_number,
                 )
             if xml_doc is None:
                 continue

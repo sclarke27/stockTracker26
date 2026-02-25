@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import csv
+import io
+
 import httpx
 from loguru import logger
 
@@ -9,6 +12,9 @@ from stock_radar.mcp_servers.market_data.config import AV_BASE_URL, SERVER_NAME
 from stock_radar.mcp_servers.market_data.exceptions import ApiError, TickerNotFoundError
 from stock_radar.models.market_data import (
     CompanyInfoResponse,
+    EarningsTranscriptResponse,
+    IPOCalendarResponse,
+    IPOEntry,
     OHLCVBar,
     PriceHistoryResponse,
     QuoteResponse,
@@ -176,6 +182,66 @@ class AlphaVantageClient:
 
         return TickerSearchResponse(matches=matches)
 
+    async def get_earnings_transcript(
+        self,
+        ticker: str,
+        quarter: int,
+        year: int,
+    ) -> EarningsTranscriptResponse:
+        """Fetch an earnings call transcript for a specific quarter.
+
+        Args:
+            ticker: Stock ticker symbol (e.g. ``"AAPL"``).
+            quarter: Fiscal quarter (1-4).
+            year: Fiscal year.
+
+        Returns:
+            Parsed transcript response.
+
+        Raises:
+            TickerNotFoundError: If no transcript content is available.
+        """
+        data = await self._request(
+            function="EARNINGS_CALL_TRANSCRIPT",
+            params={"symbol": ticker, "quarter": str(quarter), "year": str(year)},
+        )
+
+        content = data.get("content", "")
+        if not content:
+            raise TickerNotFoundError(f"Empty transcript for {ticker} Q{quarter} {year}.")
+
+        return EarningsTranscriptResponse(
+            ticker=data.get("symbol", ticker),
+            quarter=data.get("quarter", quarter),
+            year=data.get("year", year),
+            date=data.get("date", ""),
+            content=content,
+        )
+
+    async def get_ipo_calendar(self) -> IPOCalendarResponse:
+        """Fetch the upcoming IPO calendar.
+
+        Returns:
+            Parsed IPO calendar with upcoming listings.
+        """
+        raw = await self._request_csv(function="IPO_CALENDAR")
+
+        reader = csv.DictReader(io.StringIO(raw))
+        entries = [
+            IPOEntry(
+                symbol=row["symbol"],
+                name=row["name"],
+                ipo_date=row["ipoDate"],
+                price_range_low=float(row["priceRangeLow"]),
+                price_range_high=float(row["priceRangeHigh"]),
+                currency=row["currency"],
+                exchange=row["exchange"],
+            )
+            for row in reader
+        ]
+
+        return IPOCalendarResponse(entries=entries)
+
     async def _request(self, function: str, params: dict[str, str]) -> dict:
         """Make a rate-limited request to the Alpha Vantage API.
 
@@ -210,6 +276,47 @@ class AlphaVantageClient:
         data = response.json()
         self._check_for_errors(data)
         return data
+
+    async def _request_csv(self, function: str, params: dict[str, str] | None = None) -> str:
+        """Make a rate-limited request expecting a CSV response.
+
+        Args:
+            function: AV function name (e.g. ``"IPO_CALENDAR"``).
+            params: Additional query parameters.
+
+        Returns:
+            Raw CSV text.
+
+        Raises:
+            ApiError: On HTTP errors or AV-specific error responses.
+        """
+        await self._limiter.acquire()
+
+        query = {"function": function, "apikey": self._api_key, **(params or {})}
+        logger.debug(
+            "Alpha Vantage CSV request: {function}",
+            function=function,
+            server=SERVER_NAME,
+        )
+
+        try:
+            response = await self._http.get(AV_BASE_URL, params=query)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise ApiError(
+                f"Alpha Vantage HTTP {exc.response.status_code}: " f"{exc.response.text[:200]}"
+            ) from exc
+
+        text = response.text
+
+        # AV may return JSON error bodies even for CSV endpoints.
+        if text.startswith("{"):
+            import json
+
+            data = json.loads(text)
+            self._check_for_errors(data)
+
+        return text
 
     @staticmethod
     def _check_for_errors(data: dict) -> None:

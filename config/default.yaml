@@ -3,7 +3,6 @@
 
 api_keys:
   alpha_vantage: "${ALPHA_VANTAGE_API_KEY}"
-  finnhub: "${FINNHUB_API_KEY}"
   anthropic: "${ANTHROPIC_API_KEY}"
   openai: "${OPENAI_API_KEY}"
 

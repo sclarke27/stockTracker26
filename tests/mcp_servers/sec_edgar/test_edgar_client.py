@@ -347,7 +347,8 @@ class TestGetInsiderTransactions:
 
     @respx.mock
     async def test_html_primary_doc_falls_back_to_index(
-        self, edgar_client: EdgarClient,
+        self,
+        edgar_client: EdgarClient,
     ) -> None:
         """When primaryDocument is HTML, fetch the filing index to find the XML."""
         html_submissions = {

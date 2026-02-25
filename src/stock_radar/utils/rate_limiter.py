@@ -33,7 +33,7 @@ class RateLimiter:
     def __init__(
         self,
         requests_per_minute: int,
-        requests_per_day: int,
+        requests_per_day: int | None = None,
         requests_per_second: int | None = None,
     ) -> None:
         self._second_limit = requests_per_second
@@ -53,7 +53,7 @@ class RateLimiter:
                 now = time.monotonic()
                 self._purge_old(now)
 
-                if len(self._timestamps) >= self._daily_limit:
+                if self._daily_limit is not None and len(self._timestamps) >= self._daily_limit:
                     raise RateLimitExceededError(
                         f"Daily API limit of {self._daily_limit} requests exhausted."
                     )
@@ -108,8 +108,13 @@ class RateLimiter:
             return self._compute_window_wait(now, self._MINUTE_WINDOW)
 
     @property
-    def daily_remaining(self) -> int:
-        """Number of remaining requests in the current 24-hour window."""
+    def daily_remaining(self) -> int | None:
+        """Number of remaining requests in the current 24-hour window.
+
+        Returns ``None`` if no daily limit is configured.
+        """
+        if self._daily_limit is None:
+            return None
         now = time.monotonic()
         self._purge_old(now)
         return max(0, self._daily_limit - len(self._timestamps))

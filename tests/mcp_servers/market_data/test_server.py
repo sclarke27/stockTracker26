@@ -17,18 +17,13 @@ from tests.mcp_servers.market_data.test_alpha_vantage_client import (
     SAMPLE_QUOTE_RESPONSE,
     SAMPLE_SEARCH_RESPONSE,
 )
-from tests.mcp_servers.market_data.test_finnhub_client import (
-    SAMPLE_TRANSCRIPT,
-    SAMPLE_TRANSCRIPT_LIST,
-)
+from tests.mcp_servers.market_data.test_av_ipo_calendar import SAMPLE_IPO_CSV
+from tests.mcp_servers.market_data.test_av_transcript import SAMPLE_TRANSCRIPT_RESPONSE
 
 AV_URL = "https://www.alphavantage.co/query"
-FH_LIST_URL = "https://finnhub.io/api/v1/stock/transcripts/list"
-FH_TRANSCRIPT_URL = "https://finnhub.io/api/v1/stock/transcripts"
 
 MOCK_ENV = {
     "ALPHA_VANTAGE_API_KEY": "test-av-key",
-    "FINNHUB_API_KEY": "test-fh-key",
     "ANTHROPIC_API_KEY": "test-anthropic-key",
     "OPENAI_API_KEY": "test-openai-key",
     "SEC_EDGAR_EMAIL": "test@example.com",
@@ -117,12 +112,7 @@ class TestServerTools:
 
     @respx.mock
     async def test_get_earnings_transcript(self, tmp_db: str) -> None:
-        respx.get(FH_LIST_URL).mock(
-            return_value=httpx.Response(200, json=SAMPLE_TRANSCRIPT_LIST)
-        )
-        respx.get(FH_TRANSCRIPT_URL).mock(
-            return_value=httpx.Response(200, json=SAMPLE_TRANSCRIPT)
-        )
+        respx.get(AV_URL).mock(return_value=httpx.Response(200, json=SAMPLE_TRANSCRIPT_RESPONSE))
         with (
             patch.dict("os.environ", MOCK_ENV),
             patch(
@@ -137,7 +127,24 @@ class TestServerTools:
                 )
         data = json.loads(get_tool_text(result))
         assert data["ticker"] == "AAPL"
+        assert data["quarter"] == 4
         assert "Tim Cook" in data["content"]
+
+    @respx.mock
+    async def test_get_ipo_calendar(self, tmp_db: str) -> None:
+        respx.get(AV_URL).mock(return_value=httpx.Response(200, text=SAMPLE_IPO_CSV))
+        with (
+            patch.dict("os.environ", MOCK_ENV),
+            patch(
+                "stock_radar.mcp_servers.market_data.server._get_db_path",
+                return_value=tmp_db,
+            ),
+        ):
+            async with Client(create_server()) as client:
+                result = await client.call_tool("get_ipo_calendar", {})
+        data = json.loads(get_tool_text(result))
+        assert len(data["entries"]) == 2
+        assert data["entries"][0]["symbol"] == "ACME"
 
     @respx.mock
     async def test_cache_hit_on_second_call(self, tmp_db: str) -> None:

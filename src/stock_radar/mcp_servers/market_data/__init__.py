@@ -1,4 +1,4 @@
-"""Market data MCP server — Alpha Vantage prices, fundamentals, Finnhub transcripts."""
+"""Market data MCP server — Alpha Vantage prices, fundamentals, transcripts, IPOs."""
 
 from __future__ import annotations
 

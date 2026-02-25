@@ -26,7 +26,7 @@ from stock_radar.orchestrator.phases import run_analysis, run_ingestion, run_sco
 def _make_settings(**overrides: object) -> AppSettings:
     """Build an AppSettings with sensible defaults for testing."""
     defaults = {
-        "api_keys": {"alpha_vantage": "test", "finnhub": "test"},
+        "api_keys": {"alpha_vantage": "test"},
         "sec_edgar": {"user_agent_email": "test@test.com"},
     }
     defaults.update(overrides)

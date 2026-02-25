@@ -9,7 +9,6 @@ class ApiKeys(BaseModel):
     """External API key configuration."""
 
     alpha_vantage: str = Field(description="Alpha Vantage API key")
-    finnhub: str = Field(description="Finnhub API key")
     anthropic: str = Field(default="", description="Anthropic Claude API key")
     openai: str = Field(default="", description="OpenAI API key")
 
