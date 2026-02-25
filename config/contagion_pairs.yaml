@@ -27,3 +27,6 @@ pairs:
   - trigger: JPM
     target: V
     relationship: distribution_partner
+  - trigger: NOW
+    target: CRM
+    relationship: competitor
