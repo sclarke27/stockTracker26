@@ -207,41 +207,28 @@ class AlphaVantageClient:
         Raises:
             TickerNotFoundError: If no transcript content is available.
         """
+        av_quarter = f"{year}Q{quarter}"
         data = await self._request(
             function="EARNINGS_CALL_TRANSCRIPT",
-            params={"symbol": ticker, "quarter": str(quarter), "year": str(year)},
-        )
-
-        logger.debug(
-            "Transcript response keys: {keys} for {ticker} Q{quarter} {year}",
-            keys=list(data.keys()),
-            ticker=ticker,
-            quarter=quarter,
-            year=year,
-            server=SERVER_NAME,
+            params={"symbol": ticker, "quarter": av_quarter},
         )
 
         segments = self._parse_transcript_segments(data)
         if not segments:
-            logger.warning(
-                "Empty transcript response: {data}",
-                data=(
-                    {k: v if k != "transcript" else f"[{len(v)} segments]" for k, v in data.items()}
-                    if isinstance(data, dict)
-                    else data
-                ),
-                ticker=ticker,
-                quarter=quarter,
-                year=year,
-                server=SERVER_NAME,
-            )
             raise TickerNotFoundError(f"Empty transcript for {ticker} Q{quarter} {year}.")
 
         content = "\n\n".join(f"{seg.speaker} ({seg.title}): {seg.content}" for seg in segments)
 
+        # AV returns quarter as "2024Q4"; extract the trailing digit.
+        raw_quarter = data.get("quarter", av_quarter)
+        if isinstance(raw_quarter, str) and "Q" in raw_quarter:
+            parsed_quarter = int(raw_quarter[-1])
+        else:
+            parsed_quarter = int(raw_quarter) if raw_quarter else quarter
+
         return EarningsTranscriptResponse(
             ticker=data.get("symbol", ticker),
-            quarter=int(data.get("quarter", quarter)),
+            quarter=parsed_quarter,
             year=year,
             content=content,
             segments=segments,

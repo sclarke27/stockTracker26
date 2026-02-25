@@ -29,7 +29,7 @@ def av_client(rate_limiter: RateLimiter) -> AlphaVantageClient:
 
 SAMPLE_TRANSCRIPT_RESPONSE = {
     "symbol": "AAPL",
-    "quarter": "4",
+    "quarter": "2024Q4",
     "transcript": [
         {
             "speaker": "Operator",
@@ -71,7 +71,7 @@ class TestGetEarningsTranscript:
     @respx.mock
     async def test_empty_transcript_array_raises(self, av_client: AlphaVantageClient) -> None:
         """Empty transcript array should raise TickerNotFoundError."""
-        response = {"symbol": "AAPL", "quarter": "4", "transcript": []}
+        response = {"symbol": "AAPL", "quarter": "2024Q4", "transcript": []}
         respx.get(AV_BASE_URL).mock(return_value=httpx.Response(200, json=response))
         with pytest.raises(TickerNotFoundError, match="Empty transcript"):
             await av_client.get_earnings_transcript("AAPL", quarter=4, year=2024)
@@ -79,7 +79,7 @@ class TestGetEarningsTranscript:
     @respx.mock
     async def test_missing_transcript_key_raises(self, av_client: AlphaVantageClient) -> None:
         """Response without 'transcript' key should raise TickerNotFoundError."""
-        response = {"symbol": "AAPL", "quarter": "4"}
+        response = {"symbol": "AAPL", "quarter": "2024Q4"}
         respx.get(AV_BASE_URL).mock(return_value=httpx.Response(200, json=response))
         with pytest.raises(TickerNotFoundError):
             await av_client.get_earnings_transcript("AAPL", quarter=4, year=2024)
@@ -91,7 +91,7 @@ class TestGetEarningsTranscript:
         """Segments with empty content strings should be filtered out."""
         response = {
             "symbol": "AAPL",
-            "quarter": "4",
+            "quarter": "2024Q4",
             "transcript": [
                 {"speaker": "A", "title": "T", "content": "", "sentiment": ""},
                 {"speaker": "B", "title": "T", "content": "Actual content.", "sentiment": ""},
