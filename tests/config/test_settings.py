@@ -43,8 +43,8 @@ class TestOllamaSettings:
     def test_defaults(self) -> None:
         settings = OllamaSettings()
         assert settings.host == "http://localhost:11434"
-        assert settings.default_model == "llama3.1:8b"
-        assert settings.timeout_seconds == 30
+        assert settings.default_model == "qwen3:32b"
+        assert settings.timeout_seconds == 120
 
     def test_override_values(self) -> None:
         settings = OllamaSettings(host="http://192.168.1.100:11434", timeout_seconds=60)

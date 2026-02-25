@@ -14,7 +14,7 @@ from stock_radar.llm.ollama_client import OllamaClient
 
 OLLAMA_HOST = "http://localhost:11434"
 OLLAMA_CHAT_URL = f"{OLLAMA_HOST}/api/chat"
-DEFAULT_MODEL = "llama3.1:8b"
+DEFAULT_MODEL = "qwen3:32b"
 
 
 @pytest.fixture()
@@ -25,7 +25,7 @@ def client() -> OllamaClient:
 
 SAMPLE_OLLAMA_RESPONSE = {
     "message": {"role": "assistant", "content": "hello"},
-    "model": "llama3.1:8b",
+    "model": "qwen3:32b",
     "eval_count": 50,
     "prompt_eval_count": 100,
     "total_duration": 1_500_000_000,
@@ -63,7 +63,7 @@ class TestOllamaClientGenerate:
 
         assert isinstance(result, LlmResponse)
         assert result.content == "hello"
-        assert result.model == "llama3.1:8b"
+        assert result.model == "qwen3:32b"
         assert result.usage.prompt_tokens == 100
         assert result.usage.completion_tokens == 50
         assert result.usage.total_tokens == 150
@@ -160,7 +160,7 @@ class TestOllamaClientGenerate:
         await client.generate(_make_request())
 
         body = json.loads(route.calls[0].request.content)
-        assert body["model"] == "llama3.1:8b"
+        assert body["model"] == "qwen3:32b"
 
     @respx.mock
     async def test_generate_calculates_duration_ms(self, client: OllamaClient) -> None:

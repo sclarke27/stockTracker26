@@ -84,12 +84,12 @@ class TestLlmResponse:
         usage = LlmUsage(prompt_tokens=10, completion_tokens=20, total_tokens=30)
         response = LlmResponse(
             content='{"answer": 42}',
-            model="llama3.1:8b",
+            model="qwen3:32b",
             usage=usage,
             duration_ms=150.5,
         )
         assert response.content == '{"answer": 42}'
-        assert response.model == "llama3.1:8b"
+        assert response.model == "qwen3:32b"
         assert response.usage.total_tokens == 30
         assert response.duration_ms == pytest.approx(150.5)
 
@@ -98,7 +98,7 @@ class TestLlmResponse:
         usage = LlmUsage(prompt_tokens=10, completion_tokens=20, total_tokens=30)
         original = LlmResponse(
             content='{"answer": 42}',
-            model="llama3.1:8b",
+            model="qwen3:32b",
             usage=usage,
             duration_ms=150.5,
         )

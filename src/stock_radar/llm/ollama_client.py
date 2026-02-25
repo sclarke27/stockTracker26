@@ -18,7 +18,7 @@ class OllamaClient(LlmClient):
 
     Args:
         host: Ollama server URL (e.g. ``"http://localhost:11434"``).
-        model: Model name (e.g. ``"llama3.1:8b"``).
+        model: Model name (e.g. ``"qwen3:32b"``).
         timeout_seconds: Maximum time to wait for inference.
     """
 

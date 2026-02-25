@@ -85,7 +85,7 @@ def _sample_output() -> AgentOutput:
             confidence=0.70,
             reasoning="NVDA miss signals sector softness affecting AMD.",
             horizon_days=5,
-            model_used="llama3.1:8b",
+            model_used="qwen3:32b",
         ),
     )
 

@@ -210,7 +210,7 @@ class TestEarningsLinguistShouldEscalate:
             confidence=ESCALATION_CONFIDENCE_THRESHOLD - 0.01,
             reasoning="r",
             horizon_days=5,
-            model_used="llama3.1:8b",
+            model_used="qwen3:32b",
         )
         assert agent.should_escalate(_sample_input(), initial_result=result) is True
 
@@ -223,6 +223,6 @@ class TestEarningsLinguistShouldEscalate:
             confidence=0.9,
             reasoning="r",
             horizon_days=5,
-            model_used="llama3.1:8b",
+            model_used="qwen3:32b",
         )
         assert agent.should_escalate(_sample_input(), initial_result=result) is False

@@ -66,7 +66,7 @@ def _sample_output() -> AgentOutput:
             confidence=0.75,
             reasoning="Insider selling indicates bearish outlook.",
             horizon_days=15,
-            model_used="llama3.1:8b",
+            model_used="qwen3:32b",
         ),
     )
 

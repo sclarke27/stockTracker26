@@ -23,7 +23,7 @@ def _make_result(**overrides: object) -> AnalysisResult:
         "confidence": 0.85,
         "reasoning": "Strong signals.",
         "horizon_days": 5,
-        "model_used": "llama3.1:8b",
+        "model_used": "qwen3:32b",
         "escalated": False,
     }
     defaults.update(overrides)

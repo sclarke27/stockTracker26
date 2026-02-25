@@ -122,7 +122,7 @@ class TestRunEarningsLinguist:
                 confidence=0.85,
                 reasoning="Strong forward guidance.",
                 horizon_days=5,
-                model_used="llama3.1:8b",
+                model_used="qwen3:32b",
             )
             mock_output = AgentOutput(
                 prediction_id="pred-001",
@@ -210,7 +210,7 @@ class TestRunEarningsLinguist:
                 confidence=0.9,
                 reasoning="Strong.",
                 horizon_days=5,
-                model_used="llama3.1:8b",
+                model_used="qwen3:32b",
             )
             mock_output = AgentOutput(prediction_id="pred-002", result=mock_result)
             mock_agent = AsyncMock()

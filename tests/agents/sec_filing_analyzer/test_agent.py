@@ -202,7 +202,7 @@ class TestSecFilingAnalyzerShouldEscalate:
             confidence=ESCALATION_CONFIDENCE_THRESHOLD - 0.01,
             reasoning="r",
             horizon_days=15,
-            model_used="llama3.1:8b",
+            model_used="qwen3:32b",
         )
         assert agent.should_escalate(_sample_input(), initial_result=result) is True
 
@@ -214,7 +214,7 @@ class TestSecFilingAnalyzerShouldEscalate:
             confidence=0.8,
             reasoning="r",
             horizon_days=15,
-            model_used="llama3.1:8b",
+            model_used="qwen3:32b",
         )
         assert agent.should_escalate(_sample_input(), initial_result=result) is False
 
@@ -233,6 +233,6 @@ class TestSecFilingAnalyzerShouldEscalate:
             confidence=0.55,
             reasoning="r",
             horizon_days=15,
-            model_used="llama3.1:8b",
+            model_used="qwen3:32b",
         )
         assert agent.should_escalate(_sample_input(), initial_result=result) is True

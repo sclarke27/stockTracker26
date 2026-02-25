@@ -84,7 +84,7 @@ def _sample_output() -> AgentOutput:
             confidence=0.75,
             reasoning="Bullish sentiment diverges from price decline.",
             horizon_days=10,
-            model_used="llama3.1:8b",
+            model_used="qwen3:32b",
         ),
     )
 

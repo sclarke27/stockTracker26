@@ -18,9 +18,9 @@ class OllamaSettings(BaseModel):
 
     host: str = Field(default="http://localhost:11434", description="Ollama server URL")
     default_model: str = Field(
-        default="llama3.1:8b", description="Default model for routine analysis"
+        default="qwen3:32b", description="Default model for routine analysis"
     )
-    timeout_seconds: int = Field(default=30, description="Max inference time before timeout")
+    timeout_seconds: int = Field(default=120, description="Max inference time before timeout")
 
 
 class CacheSettings(BaseModel):

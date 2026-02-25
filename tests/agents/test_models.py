@@ -30,7 +30,7 @@ class TestAnalysisResult:
             confidence=0.85,
             reasoning="Strong forward guidance.",
             horizon_days=5,
-            model_used="llama3.1:8b",
+            model_used="qwen3:32b",
         )
         assert result.direction == "BULLISH"
         assert result.escalated is False
